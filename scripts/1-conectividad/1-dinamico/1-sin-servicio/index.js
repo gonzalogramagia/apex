@@ -7,13 +7,19 @@ export const sinServicio = {
   summary: "Diagnóstico inicial para falta total de servicio. Validación de masivos y situaciones de cable cortado.",
   tags: ["Sin Servicio", "Masivo", "Falla Técnica"],
   lastSync: "10 de Febrero de 2026",
+  originalScriptId: "12345", // Ejemplo, reemplazar con el real
+  complementaryContent: [
+    {
+      title: "Manual de Procedimientos Técnicos",
+      url: "https://conocimiento.telecom.com.ar/procedimientos"
+    }
+  ],
   content: `
     <div class="detail-body">
       <p style="font-weight: 600; margin-bottom: 1.5rem;">Seleccionar la problemática según corresponda:</p>
       
       <div class="info-block">
         <p><strong>Masivo Declarado:</strong> siempre se debe verificar que las fallas masivas se encuentren declaradas en CODI +.</p>
-        <img src="/scripts/1-conectividad/1-dinamico/1-sin-servicio/assets/masivos-codi.png" class="zoom-img" title="CODI+ Masivos">
       </div>
 
       <div class="info-block" style="border-left: 4px solid var(--accent-secondary);">
@@ -47,8 +53,7 @@ export const sinServicio = {
             <span class="code-label">Procedimiento</span>
             <code>Garantía de Instalación vía 100608</code>
           </div>
-          <p style="font-size: 0.9em; margin: 1rem 0;">Verificar fecha de instalación en Open:</p>
-          <img src="/scripts/1-conectividad/1-dinamico/1-sin-servicio/assets/producto-fecha-instalacion.jpg" class="zoom-img" style="max-width: 400px;" title="Fecha de Instalación">
+          <p style="font-size: 0.9em; margin: 1rem 0;">Verificar fecha de instalación en Open.</p>
         </div>
 
         <div class="policy-item">

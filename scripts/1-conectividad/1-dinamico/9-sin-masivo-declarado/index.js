@@ -8,10 +8,11 @@ export const sinMasivoDeclarado = {
   summary: "Flujo a seguir cuando no existe una falla masiva reportada en CODI+.",
   tags: ["Sin Masivo", "Troubleshooting", "Service"],
   lastSync: "10 de Febrero de 2026",
+  originalScriptId: "1009",
+  complementaryContent: [],
   content: `
     <div class="detail-body">
       <p><strong>El árbol de producto es el siguiente:</strong></p>
-      <img src="/scripts/1-conectividad/1-dinamico/9-sin-masivo-declarado/assets/arbol-de-producto.jpeg" class="zoom-img" style="max-width: 450px; margin: 20px auto; display: block;" title="Árbol de Producto">
 
       ${fragments.signalValidation}
 
