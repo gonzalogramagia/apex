@@ -143,6 +143,16 @@ window.addEventListener('popstate', (event) => {
 });
 
 function handleInitialRouting() {
+    // Check for ?q= search query param first
+    const urlParams = new URLSearchParams(window.location.search);
+    const qParam = urlParams.get('q');
+    if (qParam) {
+        searchQuery = qParam;
+        if (searchInput) searchInput.value = qParam;
+        renderScripts();
+        return;
+    }
+
     const path = window.location.pathname.split('/').filter(Boolean);
     if (path[0] === 'conectividad') {
         const categoryMap = {
@@ -246,18 +256,38 @@ function renderScripts() {
 
             // Show sync date instead of count
             const stats = document.querySelector('.stats');
-            stats.textContent = script.lastSync ? `Sincronizado: ${script.lastSync}` : '';
+            const linkHtml = script.originalScriptId ?
+                `<a href="https://knowb2b.telecom.com.ar/index.php" target="_blank" class="original-script-link">Script #${script.originalScriptId} ↗</a>` : '';
+            const syncHtml = script.lastSync ? `Sincronizado: ${script.lastSync}` : '';
+
+            stats.innerHTML = linkHtml + (linkHtml && syncHtml ? '<br>' : '') + syncHtml;
 
             scriptsGrid.classList.remove('grid-mode');
             scriptsGrid.classList.remove('grid-mode');
 
             const contentHtml = fixImagePaths(script.content);
+            const complementaryHtml = script.complementaryContent && script.complementaryContent.length > 0 ? `
+                <div class="complementary-section">
+                    <h3>Contenido Complementario</h3>
+                    <div class="complementary-links">
+                        ${script.complementaryContent.map(link => `
+                            <a href="${link.url}" target="_blank" class="complementary-link">
+                                <span class="link-icon">🔗</span>
+                                <span class="link-title">${link.title}</span>
+                                <span class="link-arrow">→</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
             let finalHtml = '';
 
             if (isUnlocked) {
                 finalHtml = `
                     <div class="script-full-view" id="script-content-view">
                         ${contentHtml}
+                        ${complementaryHtml}
                     </div>
                  `;
             } else {
@@ -281,6 +311,7 @@ function renderScripts() {
                             </div>
                         </div>
                     </div>
+                    ${complementaryHtml ? `<div class="script-full-view">${complementaryHtml}</div>` : ''}
                  `;
             }
 
@@ -364,6 +395,7 @@ function renderScripts() {
         const matchesSearch = script.title.toLowerCase().includes(searchTerm) ||
             script.summary.toLowerCase().includes(searchTerm) ||
             (script.content && stripHtml(script.content).toLowerCase().includes(searchTerm)) ||
+            (script.originalScriptId && script.originalScriptId.toString().includes(searchTerm)) ||
             script.tags.some(tag => tag.toLowerCase().includes(searchTerm));
 
         return matchesCategory && matchesSearch;
@@ -520,6 +552,7 @@ function renderSearchResult(script, query) {
 
     return `
         <div class="result-card" onclick="openScript(${script.id})">
+            ${script.originalScriptId ? `<span class="script-id-badge">#${script.originalScriptId}</span>` : ''}
             <div class="result-header">
                 <span class="card-category" style="text-transform: none; letter-spacing: normal;">${breadcrumbPath}</span>
                 <h3>${script.title}</h3>
@@ -608,6 +641,13 @@ window.openScript = function (id) {
     if (script) {
         currentScriptId = id;
 
+        // Clear Search Query
+        searchQuery = '';
+        if (searchInput) searchInput.value = '';
+
+        // Update Filter to match script category
+        currentFilter = script.category;
+
         // Update URL
         const catSlug = slugify(script.category);
         const scriptSlug = slugify(script.title);
@@ -653,6 +693,18 @@ function setupEventListeners() {
         searchQuery = e.target.value;
         const isLocalSearch = searchLocalCheck && searchLocalCheck.checked;
 
+        // Sync search query to URL for global searches
+        if (!isLocalSearch) {
+            if (searchQuery) {
+                // Reset to root context for global search
+                currentScriptId = null;
+                currentFilter = 'all';
+                window.history.replaceState({ filter: 'all', scriptId: null }, '', `/?q=${encodeURIComponent(searchQuery)}`);
+            } else {
+                window.history.replaceState({ filter: currentFilter, scriptId: null }, '', '/');
+            }
+        }
+
         renderScripts();
 
         // If local search is enabled and we're in a script, scroll to first match
@@ -665,6 +717,19 @@ function setupEventListeners() {
 
     if (searchLocalCheck) {
         searchLocalCheck.addEventListener('change', () => {
+            if (!searchLocalCheck.checked) {
+                // Switching from local to global search
+                currentScriptId = null;
+                currentFilter = 'all';
+                if (searchQuery) {
+                    window.history.replaceState({ filter: 'all', scriptId: null }, '', `/?q=${encodeURIComponent(searchQuery)}`);
+                } else {
+                    window.history.replaceState({ filter: 'all', scriptId: null }, '', '/');
+                }
+                renderScripts();
+                return;
+            }
+
             renderScripts();
 
             // If search was enabled and there's a query, scroll to first match
