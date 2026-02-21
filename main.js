@@ -137,10 +137,125 @@ window.addEventListener('popstate', (event) => {
         currentFilter = event.state.filter || 'all';
         currentScriptId = event.state.scriptId || null;
         renderScripts();
+
+        // Track visit via back/forward navigation too
+        if (event.state.scriptId) {
+            const script = scripts.find(s => s.id === event.state.scriptId);
+            if (script) saveToHistory(script);
+        }
     } else {
         location.reload();
     }
 });
+
+// ── History ───────────────────────────────────────────────────────────────────
+const HISTORY_KEY = 'apex_nav_history';
+const HISTORY_MAX = 100;
+
+function saveToHistory(script) {
+    const catSlug = slugify(script.category);
+    const scriptSlug = slugify(script.title);
+    const url = `/conectividad/${catSlug}/${scriptSlug}`;
+
+    const conectividadSubs = ['Dinámico', 'Simétrico', 'xDSL', 'FTTH', 'GPON Corporativo', 'Internet Plus', 'Enlace Fibra', 'Satelital', 'VPN', 'SD-Wan', 'SD-Branch', 'VVIP', 'Fibertel Zone', 'Servicios Adicionales', 'LTE'];
+    const breadcrumb = conectividadSubs.includes(script.category)
+        ? `Conectividad > ${script.category} > ${script.title}`
+        : `${script.category} > ${script.title}`;
+
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+    const existingIndex = history.findIndex(h => h.url === url);
+    if (existingIndex !== -1) {
+        const existing = history[existingIndex];
+        existing.breadcrumb = breadcrumb; // Fix stale entries
+
+        // Only increment if it was NOT already at the top
+        if (existingIndex > 0) {
+            existing.count = (existing.count || 1) + 1;
+            existing.lastVisit = new Date().toISOString();
+        }
+
+        // Move to top (most recently visited)
+        history = [existing, ...history.filter((_, i) => i !== existingIndex)];
+    } else {
+        history.unshift({
+            title: script.title,
+            category: script.category,
+            breadcrumb,
+            url,
+            count: 1,
+            firstVisit: new Date().toISOString(),
+            lastVisit: new Date().toISOString()
+        });
+    }
+
+    // Keep only last 100
+    if (history.length > HISTORY_MAX) history = history.slice(0, HISTORY_MAX);
+
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function renderHistoryPage() {
+    const conectividadSubs = ['Dinámico', 'Simétrico', 'xDSL', 'FTTH', 'GPON Corporativo', 'Internet Plus', 'Enlace Fibra', 'Satelital', 'VPN', 'SD-Wan', 'SD-Branch', 'VVIP', 'Fibertel Zone', 'Servicios Adicionales', 'LTE'];
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+    // Update header
+    currentCategoryTitle.textContent = 'Historial';
+    breadcrumbsContainer.innerHTML = `
+        <a class="breadcrumb-item" onclick="filterByCategory('all')">
+            <span>🏠</span> Inicio
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Historial</span>
+    `;
+    breadcrumbsContainer.classList.remove('is-home');
+    document.querySelector('.content-header').classList.add('is-history');
+
+    const stats = document.querySelector('.stats');
+    if (stats) stats.innerHTML = `
+        <span>${history.length} entradas</span>
+        ${history.length > 0 ? `<button onclick="clearHistory()" class="btn-ghost-danger">🗑 Borrar historial</button>` : ''}
+    `;
+
+    if (history.length === 0) {
+        scriptsGrid.innerHTML = `
+            <div style="text-align:center; padding: 4rem; color: var(--text-secondary);">
+                <div style="font-size:3rem; margin-bottom:1rem;">📭</div>
+                <p>Todavía no visitaste ningún script.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const fmt = (iso) => {
+        const d = new Date(iso);
+        return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+            + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const rows = history.map((h, i) => `
+        <a href="${h.url}" class="history-row" title="Ir a ${h.title}">
+            <span class="history-index">${i + 1}</span>
+            <span class="history-info">
+                <span class="history-title">${h.title}</span>
+                <span class="history-path">${h.breadcrumb ? h.breadcrumb.replace(/^Inicio\s*>\s*/, '') : (conectividadSubs.includes(h.category) ? `Conectividad > ${h.category} > ${h.title}` : `${h.category} > ${h.title}`)}</span>
+                <span class="history-meta">Última visita: ${fmt(h.lastVisit || h.timestamp || '')}</span>
+            </span>
+            <span class="history-count" title="${h.count || 1} visita(s)">${h.count || 1}×</span>
+            <span class="history-arrow">→</span>
+        </a>
+    `).join('');
+
+    scriptsGrid.innerHTML = `<div class="history-list">${rows}</div>`;
+}
+
+window.clearHistory = function () {
+    if (confirm('¿Borrar todo el historial?')) {
+        localStorage.removeItem(HISTORY_KEY);
+        renderHistoryPage();
+    }
+};
+// ──────────────────────────────────────────────────────────────────────────────
 
 function handleInitialRouting() {
     // Check for ?q= search query param first
@@ -154,6 +269,14 @@ function handleInitialRouting() {
     }
 
     const path = window.location.pathname.split('/').filter(Boolean);
+
+    // Handle /history route
+    if (path[0] === 'history') {
+        window.history.replaceState({}, '', '/history');
+        renderHistoryPage();
+        return;
+    }
+
     if (path[0] === 'conectividad') {
         const categoryMap = {
             'conectividad': 'Conectividad',
@@ -365,6 +488,7 @@ function renderScripts() {
 
     // 2. Default view settings
     document.querySelector('.content-header').style.display = 'flex';
+    document.querySelector('.content-header').classList.remove('is-history');
     scriptsGrid.classList.add('grid-mode');
 
     if (searchQuery) {
@@ -653,6 +777,9 @@ window.openScript = function (id) {
         const scriptSlug = slugify(script.title);
         const path = `/conectividad/${catSlug}/${scriptSlug}`;
         window.history.pushState({ filter: script.category, scriptId: id }, '', path);
+
+        // Save to browsing history
+        saveToHistory(script);
 
         renderScripts();
     }
