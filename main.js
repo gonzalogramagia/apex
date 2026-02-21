@@ -346,14 +346,65 @@ function renderBreadcrumbs() {
         }
 
         if (currentScriptId) {
-            const script = scripts.find(s => s.id === currentScriptId);
+            let script = scripts.find(s => s.id === currentScriptId);
             if (script) {
-                html += `<span class="breadcrumb-separator">/</span>`;
-                html += `
-                    <span class="breadcrumb-item active">
-                        ${script.title}
-                    </span>
-                `;
+                const breadcrumbScripts = [];
+                let current = script;
+                while (current) {
+                    breadcrumbScripts.unshift(current);
+                    if (current.parentScriptId) {
+                        current = scripts.find(s => s.id === current.parentScriptId);
+                    } else {
+                        current = null;
+                    }
+                }
+                breadcrumbScripts.forEach((s, index) => {
+                    html += `<span class="breadcrumb-separator">/</span>`;
+
+                    let childrenMenu = '';
+                    if (s.childScripts && s.childScripts.length > 0) {
+                        const childItems = s.childScripts.map(childId => {
+                            const childScript = scripts.find(cs => cs.id === childId);
+                            if (childScript && !childScript.locked) {
+                                const check = (!childScript.childScripts || childScript.childScripts.length === 0) ? ' <span style="font-size:0.9em; margin-left:2px;">✅</span>' : '';
+                                const isCurrent = childId === currentScriptId;
+                                const titleStyle = isCurrent ? 'font-weight: 700;' : '';
+                                return `<li onclick="event.stopPropagation(); openScript(${childId})" style="${titleStyle}">${childScript.title}${check}</li>`;
+                            } else if (childScript && childScript.locked) {
+                                return `<li class="locked">${childScript.title} 🔒</li>`;
+                            }
+                            return '';
+                        }).join('');
+
+                        if (childItems) {
+                            childrenMenu = `
+                                <div class="breadcrumb-hover-menu">
+                                    <ul>
+                                        ${childItems}
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    const checkMark = (!s.childScripts || s.childScripts.length === 0) ? ' <span style="font-size:0.9em; margin-left:2px;">✅</span>' : '';
+
+                    if (index === breadcrumbScripts.length - 1) {
+                        html += `
+                            <span class="breadcrumb-item active ${childrenMenu ? 'has-children' : ''}">
+                                ${s.title.split(' – ').pop().split(' - ').pop()}${checkMark}
+                                ${childrenMenu}
+                            </span>
+                        `;
+                    } else {
+                        html += `
+                            <a class="breadcrumb-item ${childrenMenu ? 'has-children' : ''}" onclick="openScript(${s.id})">
+                                ${s.title}${checkMark}
+                                ${childrenMenu}
+                            </a>
+                        `;
+                    }
+                });
             }
         }
     } else {
@@ -749,13 +800,23 @@ function highlightMatches(container, query) {
 
 // Helper to render a single script card
 function renderScriptCard(script) {
+    const childCount = script.childScripts ? script.childScripts.length : 0;
+    let extraFooter = '';
+
+    if (script.locked) {
+        extraFooter = '<div class="card-footer"><span class="tag">Próximamente</span></div>';
+    } else {
+        const text = childCount === 1 ? 'Contiene 1 script navegable' : `Contiene ${childCount} scripts navegables`;
+        extraFooter = `<div class="card-footer" style="margin-top: 0.5rem;"><span class="tag" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(59, 130, 246, 0.2);">${text}</span></div>`;
+    }
+
     return `
         <div class="script-card ${script.locked ? 'is-locked' : ''}" 
              ${script.locked ? '' : `onclick="openScript(${script.id})"`}>
             <span class="card-category">${script.category} ${script.locked ? '• 🔒' : ''}</span>
             <h3>${script.title}</h3>
             <p class="card-preview">${script.locked ? '' : script.summary}</p>
-            ${script.locked ? '<div class="card-footer"><span class="tag">Próximamente</span></div>' : ''}
+            ${extraFooter}
         </div>
     `;
 }
