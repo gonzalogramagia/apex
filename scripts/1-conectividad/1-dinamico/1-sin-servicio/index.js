@@ -7,7 +7,7 @@ export const sinServicio = {
   summary: "Diagnóstico inicial para falta total de servicio. Validación de masivos y situaciones de cable cortado.",
   tags: ["Sin Servicio", "Masivo", "Falla Técnica"],
   lastSync: "10 de Febrero de 2026",
-  originalScriptId: "12345", // Ejemplo, reemplazar con el real
+  originalScriptId: "79", // https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/79.html
   complementaryContent: [
     {
       title: "Manual de Procedimientos Técnicos",

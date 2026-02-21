@@ -375,15 +375,16 @@ function renderScripts() {
         const script = scripts.find(s => s.id === currentScriptId);
         if (script) {
             document.querySelector('.content-header').style.display = 'flex';
+            document.querySelector('.content-header').classList.remove('is-history');
             currentCategoryTitle.textContent = script.title;
 
             // Show sync date instead of count
             const stats = document.querySelector('.stats');
             const linkHtml = script.originalScriptId ?
-                `<a href="https://knowb2b.telecom.com.ar/index.php" target="_blank" class="original-script-link">Script #${script.originalScriptId} ↗</a>` : '';
-            const syncHtml = script.lastSync ? `Sincronizado: ${script.lastSync}` : '';
+                `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/${script.originalScriptId}.html" target="_blank" class="original-script-link">Script #${script.originalScriptId} ↗</a>` : '';
+            const syncHtml = script.lastSync ? `<span>Sincronizado: ${script.lastSync}</span>` : '';
 
-            stats.innerHTML = linkHtml + (linkHtml && syncHtml ? '<br>' : '') + syncHtml;
+            stats.innerHTML = linkHtml + syncHtml;
 
             scriptsGrid.classList.remove('grid-mode');
             scriptsGrid.classList.remove('grid-mode');
@@ -537,7 +538,7 @@ function renderScripts() {
     const stats = document.querySelector('.stats');
     if (searchQuery) {
         currentCategoryTitle.textContent = 'Búsqueda General';
-        stats.innerHTML = `<span id="script-count">${totalScriptsInView}</span> ${totalScriptsInView === 1 ? 'coincidencia encontrada' : 'coincidencias encontradas'}`;
+        stats.innerHTML = `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/menu_soporte.html" target="_blank" class="original-script-link">Scripting Técnico ↗</a><span><span id="script-count">${totalScriptsInView}</span> ${totalScriptsInView === 1 ? 'coincidencia encontrada' : 'coincidencias encontradas'}</span>`;
     } else {
         // Reset count text if not searching
         // But also check if we need to reset the category title? 
@@ -565,7 +566,7 @@ function renderScripts() {
                 else currentCategoryTitle.textContent = currentFilter;
             }
         }
-        stats.innerHTML = `<span id="script-count">${totalScriptsInView}</span> scripts encontrados`;
+        stats.innerHTML = `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/menu_soporte.html" target="_blank" class="original-script-link">Scripting Técnico ↗</a><span><span id="script-count">${totalScriptsInView}</span> scripts encontrados</span>`;
     }
 
     // 3. Main Category Hub (Home View)

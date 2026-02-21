@@ -7,6 +7,8 @@ export const lentitud = {
   summary: "Diagnóstico de navegación lenta, validación de masivos y recambio de equipos Docsis 2.0.",
   tags: ["Lentitud", "Docsis 2.0", "Masivo", "Infinite"],
   lastSync: "10 de Febrero de 2026",
+  originalScriptId: "1064",
+  complementaryContent: [],
   content: `
     <div class="detail-body">
       <div class="alert-box warning">
