@@ -111,6 +111,59 @@ html {
     gap: 0.4rem;
     padding: 0.25rem 0.5rem;
     border-radius: 100px;
+    position: relative;
+}
+
+.breadcrumb-hover-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    z-index: 100;
+}
+
+.breadcrumb-item:hover .breadcrumb-hover-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.breadcrumb-hover-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.breadcrumb-hover-menu ul li {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    color: var(--text-primary);
+    transition: all var(--transition-speed);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.breadcrumb-hover-menu ul li:not(.locked):hover {
+    color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.breadcrumb-hover-menu ul li.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .breadcrumb-item:hover {
@@ -123,8 +176,6 @@ html {
 }
 
 .breadcrumb-item.active {
-    color: var(--text-primary);
-    font-weight: 700;
     cursor: default;
     background: transparent;
 }
@@ -683,6 +734,54 @@ h3,
     border: 1px solid var(--glass-border);
 }
 
+.card-hover-menu {
+    position: absolute;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    background: var(--bg-card);
+    border-top: 1px solid var(--glass-border);
+    padding: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    z-index: 10;
+}
+
+.script-card.has-children:hover .card-hover-menu {
+    bottom: 0;
+    opacity: 1;
+}
+
+.card-hover-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.card-hover-menu ul li {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    transition: all var(--transition-speed);
+}
+
+.card-hover-menu ul li:not(.locked):hover {
+    color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.card-hover-menu ul li.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
@@ -1093,6 +1192,43 @@ h3,
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-option {
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+    border: 1.5px solid #d97706;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    opacity: 0.85;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-option[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.btn-option::after {
+    content: '→';
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.btn-option:hover {
+    background: #d97706;
+    color: white;
+    opacity: 1;
+}
+
+.btn-option:hover::after {
+    transform: translateX(3px);
 }
 
 /* Hamburger Menu */
