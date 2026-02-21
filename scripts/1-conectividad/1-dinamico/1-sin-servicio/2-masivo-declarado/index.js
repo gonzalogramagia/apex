@@ -1,4 +1,4 @@
-import { fragments } from '../../../../fragments.js';
+import { fragments } from '../../../../../fragments.js';
 
 export const masivoDeclarado = {
     id: 1010,
