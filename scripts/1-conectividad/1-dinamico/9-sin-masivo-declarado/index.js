@@ -1,32 +1,35 @@
-import { fragments } from '../../../../fragments.js';
-
 export const sinMasivoDeclarado = {
   id: 1009,
   title: "Sin masivo declarado",
   category: "Dinámico",
   isHidden: true,
-  summary: "Flujo a seguir cuando no existe una falla masiva reportada en CODI+.",
-  tags: ["Sin Masivo", "Troubleshooting", "Service"],
-  lastSync: "10 de Febrero de 2026",
-  originalScriptId: "1009",
+  parentScriptId: 1001,
+  summary: "Verificación de señal del cablemódem en CODI+ o NXT cuando no existe falla masiva declarada.",
+  tags: ["Sin Masivo", "CODI+", "NXT", "Señal", "Cablemódem"],
+  lastSync: "21 de Febrero de 2026",
+  originalScriptId: "943",
   complementaryContent: [],
+  childScripts: [1012, 1013],
   content: `
     <div class="detail-body">
+
       <p><strong>El árbol de producto es el siguiente:</strong></p>
 
-      ${fragments.signalValidation}
+      <div class="info-block" style="margin-top:1.5rem;">
+        <h4>🔍 Verificar si el cablemódem posee señal en CODI+ o NXT</h4>
 
-      <div class="question-box" style="margin-top: 30px; background: rgba(16, 185, 129, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid var(--accent-primary);">
-          <h3 style="margin-bottom: 20px; color: var(--text-primary);">¿Tiene señal el cablemódem?</h3>
-          <div style="display: flex; gap: 15px; justify-content: center;">
-              <button class="btn-primary" style="min-width: 120px;" onclick="alert('Flujo: Con Señal')">SÍ</button>
-              <button class="btn-primary" style="min-width: 120px; background: #991b1b;" onclick="alert('Flujo: Sin Señal')">NO</button>
-          </div>
+        <p style="margin-top:1rem;"><strong>CODI+</strong></p>
+        <p>Presionar el botón <em>"Ver información de Diagnóstico"</em>. Dentro de Realtime, en <strong>Estado de registración</strong>, verificar el estado del cablemódem.</p>
+
+        <p style="margin-top:1.5rem;"><strong>NXT</strong></p>
+        <p>Verificar si el cablemódem posee señal en la parte <strong>Overview</strong>, sección <strong>Status</strong> en <em>CM Status</em>.</p>
       </div>
 
-      <div class="panel-footer" style="margin-top: 40px;">
-        <button class="btn-secondary" onclick="openScript(1001)">Volver a Selección</button>
+      <div class="panel-footer" style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <button class="btn-option" disabled>Cablemódem sin señal</button>
+        <button class="btn-option" disabled>Cablemódem con señal</button>
       </div>
+
     </div>
   `
 };

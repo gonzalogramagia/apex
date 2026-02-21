@@ -7,6 +7,10 @@ import { garantiaDeInstalacion } from './scripts/1-conectividad/1-dinamico/6-gar
 import { upgradeTecnologico } from './scripts/1-conectividad/1-dinamico/7-upgrade-tecnologico/index.js';
 import { regularizarOT } from './scripts/1-conectividad/1-dinamico/8-regularizar-ot/index.js';
 import { sinMasivoDeclarado } from './scripts/1-conectividad/1-dinamico/9-sin-masivo-declarado/index.js';
+import { masivoDeclarado } from './scripts/1-conectividad/1-dinamico/10-masivo-declarado/index.js';
+import { sinFallaMasiva } from './scripts/1-conectividad/1-dinamico/11-sin-falla-masiva/index.js';
+import { cablemodemSinSenal } from './scripts/1-conectividad/1-dinamico/12-cablemodem-sin-senal/index.js';
+import { cablemodemConSenal } from './scripts/1-conectividad/1-dinamico/13-cablemodem-con-senal/index.js';
 
 export const scripts = [
   // --- DINÁMICO (Ordenado del 1 al 9) ---
@@ -18,5 +22,9 @@ export const scripts = [
   garantiaDeInstalacion,
   upgradeTecnologico,
   regularizarOT,
-  sinMasivoDeclarado
+  sinMasivoDeclarado,
+  masivoDeclarado,
+  sinFallaMasiva,
+  cablemodemSinSenal,
+  cablemodemConSenal
 ];

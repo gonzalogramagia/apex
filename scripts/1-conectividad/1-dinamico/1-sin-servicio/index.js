@@ -6,70 +6,51 @@ export const sinServicio = {
   category: "Dinámico",
   summary: "Diagnóstico inicial para falta total de servicio. Validación de masivos y situaciones de cable cortado.",
   tags: ["Sin Servicio", "Masivo", "Falla Técnica"],
-  lastSync: "10 de Febrero de 2026",
-  originalScriptId: "79", // https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/79.html
-  complementaryContent: [
-    {
-      title: "Manual de Procedimientos Técnicos",
-      url: "https://conocimiento.telecom.com.ar/procedimientos"
-    }
-  ],
+  lastSync: "21 de Febrero de 2026",
+  originalScriptId: "79",
+  complementaryContent: [],
+  childScripts: [1009, 1010, 1011],
   content: `
     <div class="detail-body">
-      <p style="font-weight: 600; margin-bottom: 1.5rem;">Seleccionar la problemática según corresponda:</p>
-      
+
+      <p style="font-weight:600; margin-bottom:1.5rem;">Seleccionar la problemática según corresponda:</p>
+
       <div class="info-block">
         <p><strong>Masivo Declarado:</strong> siempre se debe verificar que las fallas masivas se encuentren declaradas en CODI +.</p>
       </div>
 
-      <div class="info-block" style="border-left: 4px solid var(--accent-secondary);">
-        <p><strong>Posible Masivo:</strong> de no visualizar el masivo declarado y detectamos una situación de posible masivo (ejemplo: vecinos caídos), se debe remitir un mail al área correspondiente. <strong>Troubleshooting botón Posible Masivo</strong>.</p>
-        <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;"><strong>Sin Falla Masiva:</strong> continuar con el flujo del procedimiento.</p>
+      <div class="info-block" style="margin-top:1rem;">
+        <p><strong>Posible Masivo:</strong> de no visualizar el masivo declarado y detectamos una situación de posible masivo (ejemplo: vecinos caídos), se debe remitir un mail al área correspondiente para que declaren el mismo. <strong>Troubleshooting botón Posible Masivo</strong>.</p>
+        <p style="margin-top:0.5rem;"><strong>Sin Falla Masiva:</strong> continuar con el flujo del procedimiento.</p>
       </div>
 
-      <div class="alert-box warning">
-        <h4>⚠️ Información importante antes de avanzar</h4>
-        <p><strong>Acometida:</strong> Bajo ningún punto de vista debemos informarle al cliente que vamos a realizar una acometida dedicada. Se realiza la instalación con una sola acometida independientemente de la cantidad de servicios.</p>
+      <div class="alert-box warning" style="margin-top:1.5rem;">
+        <h4>⚠️ Información importante antes de avanzar con el flujo</h4>
+        <p><strong>Acometida:</strong> Bajo ningún punto de vista debemos informarle al cliente que vamos a realizar una acometida dedicada para un solo cablemódem, dado que, si el cliente cuenta con uno o más servicios, se realizará la instalación con una sola acometida.</p>
       </div>
 
-      <div class="service-section" style="margin-top: 3rem;">
-        <h3 style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; color: var(--accent-secondary);">
-          <span style="font-size: 1.3rem;">🛠️</span> 
-          Service Técnicos
-        </h3>
+      <div class="service-section" style="margin-top:1.5rem;">
+        <h3 style="color:var(--accent-secondary); margin-bottom:1rem;">📋 Service</h3>
 
-        <div class="policy-item">
-          <p><strong>Cambios de boca de lugar:</strong> el cambio de boca únicamente debe gestionarse vía <strong>Service</strong>. Válido dentro del mismo domicilio/piso (máx 70 metros).</p>
-          <div class="code-box">
-            <span class="code-label">Código Open (HFC)</span>
-            <code>100608 - Reinstalación Acometida Sin Afectación</code>
-            <span style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">(Ya que el servicio no está caído, solo quiere cambiar el cablemódem de lugar)</span>
-          </div>
+        <p><strong>Cambios de boca de lugar:</strong> el cambio de boca de lugar únicamente debe gestionarse vía Service. Este cambio se puede realizar dentro del mismo domicilio/piso del cliente, es decir, que no afecte la dirección reflejada en Open y cubre una distancia máxima de 70 metros.</p>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin:0.5rem 0 1rem 0;">
+          <div class="code-box"><span class="code-label">HFC</span><code>100608 - Reinstalación Acometida Sin Afectación</code></div>
         </div>
+        <p style="font-size:0.85rem; color:var(--text-secondary);">(Ya que el servicio no está caído, solo quiere cambiar el cablemódem de lugar)</p>
 
-        <div class="policy-item">
-          <p><strong>Garantía de Instalación:</strong> aplica dentro de los <strong>30 días</strong> desde el alta. Aclarar obligatoriamente en comentarios.</p>
-          <div class="code-box">
-            <span class="code-label">Procedimiento</span>
-            <code>Garantía de Instalación vía 100608</code>
-          </div>
-          <p style="font-size: 0.9em; margin: 1rem 0;">Verificar fecha de instalación en Open.</p>
-        </div>
+        <p style="margin-top:1rem;"><strong>Garantía de Instalación:</strong> si el cliente manifiesta que el servicio no le está funcionando correctamente o que se encuentra sin servicio y se encuentra dentro de los <strong>30 días desde que se dio de alta el producto</strong>, generar un Service Técnico en Open con la aclaración en comentarios que es por Garantía de Instalación por: <strong>100608 - Reinstalación Acometida Sin Afectación</strong>. Verificar la fecha de instalación para corroborar estar dentro de los 30 días.</p>
 
-        <div class="policy-item">
-          <p><strong>Cable cortado:</strong> Generar OT por <strong>Sin servicio</strong>, dar agenda y verificar matriz de escalamiento según corresponda.</p>
-        </div>
+        <p style="margin-top:1rem;"><strong>Cable cortado:</strong> en caso de que el cliente reclame que no tiene servicio porque por ejemplo un camión pasó y cortó el cable, se deberá generar la OT en Open por Sin servicio, dar agenda y en caso de escalamientos se deberá recomendar según matriz de escalamiento.</p>
 
-        <div class="policy-item">
-          <p><strong>Comunicaciones Unificadas:</strong> En comentarios de la OT aclarar: <strong>"Soporte Comunicaciones Unificadas"</strong>.</p>
-        </div>
+        <p style="margin-top:1rem;"><strong>Comunicaciones Unificadas:</strong> si la carga del Service viene por un troubleshooting sobre Comunicaciones Unificadas se debe aclarar en el comentario de la OT <strong>"Soporte Comunicaciones Unificadas"</strong>.</p>
       </div>
 
-      <div class="panel-footer" style="margin-top: 3rem; display: flex; gap: 1rem;">
-        <button class="btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled>1. Sin masivo declarado</button>
-        <button class="btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled>2. Masivo declarado</button>
-        <button class="btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled>3. Posible Masivo</button>
+      <div class="panel-footer" style="margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <button class="btn-option" onclick="openScript(1009)">Sin masivo declarado</button>
+        <button class="btn-option" onclick="openScript(1010)">Masivo Declarado</button>
+        <button class="btn-option" disabled>Sin Falla Masiva | Masivo en curso</button>
       </div>
+
     </div>
   `
 };
