@@ -577,37 +577,34 @@ function renderScripts() {
         return matchesCategory && matchesSearch;
     });
 
+    let resultLabel = '';
     if (searchQuery) {
         totalScriptsInView = filteredScripts.filter(s => !s.locked).length;
+        resultLabel = totalScriptsInView === 1 ? 'coincidencia encontrada' : 'coincidencias encontradas';
     } else if (currentFilter === 'all') {
-        totalScriptsInView = activeScripts.length;
+        const mainCategories = [
+            'Conectividad', 'Video y Media', 'Voz Fija', 'UCAAS & Colaboración',
+            'Cloud', 'Data Center', 'Seguridad', 'Innovación', 'Móvil',
+            'Servicios Especiales', 'Contingencia ICD', 'SPAM-WHITELIST'
+        ];
+        totalScriptsInView = mainCategories.filter(cat => scripts.some(s => s.category === cat || (cat === 'Conectividad' && conectividadSubs.includes(s.category)))).length;
+        resultLabel = totalScriptsInView === 1 ? 'categoría encontrada' : 'categorías encontradas';
     } else if (currentFilter === 'Conectividad') {
-        totalScriptsInView = activeScripts.filter(s => conectividadSubs.includes(s.category)).length;
+        totalScriptsInView = conectividadSubs.filter(sub => scripts.some(s => s.category === sub)).length;
+        resultLabel = totalScriptsInView === 1 ? 'subcategoría encontrada' : 'subcategorías encontradas';
     } else {
         totalScriptsInView = activeScripts.filter(s => s.category === currentFilter).length;
+        resultLabel = totalScriptsInView === 1 ? 'ítem encontrado' : 'ítems encontrados';
     }
+
     const stats = document.querySelector('.stats');
     if (searchQuery) {
         currentCategoryTitle.textContent = 'Búsqueda General';
-        stats.innerHTML = `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/menu_soporte.html" target="_blank" class="original-script-link">Scripting Técnico ↗</a><span><span id="script-count">${totalScriptsInView}</span> ${totalScriptsInView === 1 ? 'coincidencia encontrada' : 'coincidencias encontradas'}</span>`;
     } else {
         // Reset count text if not searching
-        // But also check if we need to reset the category title? 
-        // The category title is usually set by filterByCategory, BUT since we are here the searchQuery might have cleared
-        // If searchQuery is empty, we should theoretically ensure the title matches the filter.
-        // The filterByCategory function updates currentCategoryTitle, so usually it's fine.
-        // However, if the user types and then deletes, we want the title to go back.
-
-        // Let's re-apply the current filter title logic just in case:
         if (currentFilter === 'all') {
             currentCategoryTitle.textContent = 'Todos los Scripts';
         } else {
-            // Find button text again? Or just use currentFilter.
-            // Usually currentFilter is the name, but sometimes it might be "Conectividad" which is fine.
-            // To be safe let's leave the title as is if not searching, assuming filterByCategory set it correctly?
-            // Actually, if I search "foo", title becomes "Búsqueda General". If I clear "foo", title remains "Búsqueda General" unless I fix it.
-
-            // So yes, we need to reset it.
             const activeBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === currentFilter);
             if (activeBtn) {
                 currentCategoryTitle.textContent = activeBtn.innerText.replace(/[▲▼]/g, '').trim();
@@ -617,8 +614,8 @@ function renderScripts() {
                 else currentCategoryTitle.textContent = currentFilter;
             }
         }
-        stats.innerHTML = `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/menu_soporte.html" target="_blank" class="original-script-link">Scripting Técnico ↗</a><span><span id="script-count">${totalScriptsInView}</span> scripts encontrados</span>`;
     }
+    stats.innerHTML = `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/menu_soporte.html" target="_blank" class="original-script-link">Scripting Técnico ↗</a><span><span id="script-count">${totalScriptsInView}</span> ${resultLabel}</span>`;
 
     // 3. Main Category Hub (Home View)
     if (currentFilter === 'all' && !searchQuery) {
@@ -629,14 +626,15 @@ function renderScripts() {
         ];
 
         scriptsGrid.innerHTML = mainCategories.map(cat => {
-            const hasScripts = scripts.some(s => s.category === cat ||
-                (cat === 'Conectividad' && conectividadSubs.includes(s.category)));
+            const catScripts = scripts.filter(s => !s.locked && !s.isHidden && (s.category === cat || (cat === 'Conectividad' && conectividadSubs.includes(s.category))));
+            const hasScripts = catScripts.length > 0;
 
             return `
                 <div class="category-card ${!hasScripts ? 'is-locked' : ''}" 
                      ${hasScripts ? `onclick="filterByCategory('${cat}')"` : ''}>
                     <div class="cat-card-icon">${hasScripts ? '⚡' : '🔒'}</div>
                     <h3>${cat}</h3>
+                    ${hasScripts ? `<div class="cat-pill">Contiene ${catScripts.length} ${catScripts.length === 1 ? 'script navegable' : 'scripts navegables'}</div>` : ''}
                     <span class="cat-card-link">${hasScripts ? 'Seleccionar →' : 'Próximamente'}</span>
                 </div>
             `;
@@ -647,13 +645,15 @@ function renderScripts() {
     // 4. Conectividad Category Hub
     if (currentFilter === 'Conectividad' && !searchQuery) {
         scriptsGrid.innerHTML = conectividadSubs.map(sub => {
-            const hasScripts = scripts.some(s => s.category === sub);
+            const subScripts = scripts.filter(s => !s.locked && !s.isHidden && s.category === sub);
+            const hasScripts = subScripts.length > 0;
 
             return `
                 <div class="category-card ${!hasScripts ? 'is-locked' : ''}" 
                      ${hasScripts ? `onclick="filterByCategory('${sub}')"` : ''}>
                     <div class="cat-card-icon">${hasScripts ? '📁' : '🔒'}</div>
                     <h3>${sub}</h3>
+                    ${hasScripts ? `<div class="cat-pill">Contiene ${subScripts.length} ${subScripts.length === 1 ? 'script navegable' : 'scripts navegables'}</div>` : ''}
                     <span class="cat-card-link">${hasScripts ? 'Explorar scripts →' : 'Próximamente'}</span>
                 </div>
             `;
