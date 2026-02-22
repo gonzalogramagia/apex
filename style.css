@@ -1092,13 +1092,91 @@ h3,
     transform: scale(1.1);
 }
 
-/* Fixed Bottom Left Button */
-.fixed-bottom-left {
+/* Fixed Bottom Left Group */
+.fixed-bottom-left-group {
     position: fixed;
     bottom: 2rem;
     left: 2rem;
+    display: flex;
+    gap: 0.75rem;
     z-index: 999;
-    transition: opacity 0.3s ease;
+}
+
+/* Floater Buttons */
+.floater-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-primary);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.floater-btn i,
+.floater-btn svg {
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.floater-btn:not(.floater-disabled):hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.floater-btn:not(.floater-disabled):hover i,
+.floater-btn:not(.floater-disabled):hover svg {
+    color: #eab308;
+    /* yellow-500 */
+}
+
+.floater-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Expansible */
+.floater-btn.expansible {
+    width: auto;
+    padding: 0 0.75rem;
+}
+
+.expansible-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s ease-in-out;
+}
+
+.floater-btn.expansible:not(.floater-disabled):hover .expansible-text {
+    max-width: 150px;
+    opacity: 1;
+    margin-left: 0.5rem;
+    color: #eab308;
+}
+
+/* Contractible */
+.floater-btn.contractible {
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.floater-btn.expansible:not(.floater-disabled):hover~.floater-btn.contractible {
+    width: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    margin-left: -12px;
 }
 
 /* Fixed Bottom Right Button */
@@ -1334,7 +1412,7 @@ h3,
         flex: 1;
     }
 
-    .fixed-bottom-left {
+    .fixed-bottom-left-group {
         bottom: 1rem;
         left: 1rem;
     }

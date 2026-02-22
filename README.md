@@ -44,6 +44,7 @@ The definitive technical scripting guide for first-line technical support.
 - **Typography**: Outfit & Inter (Google Fonts)
 - **Icons**: FontAwesome & Custom Emoji Set
 
+
 📂 Project Structure
 ```text
 scripts/
@@ -53,6 +54,12 @@ scripts/
               ├── index.js (Content)
               └── assets/  (Images/Files)
 ```
+
+🌐 Quick Links
+- **Apex Today**: Go back to your [Daily Task Manager](https://apex.hoy.today).
+- **Apex Emojis**: Navigate to [Apex Emojis](https://apex.milemojis.com).
+- **Apex Scripting**: You are here!
+- **Antipala Pro**: Take a break and play [Antipala Pro](https://apex.antipala.pro).
 
 📄 License
 This project is designed for internal technical support operations and is shared as a reference for premium documentation standards.
