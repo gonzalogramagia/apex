@@ -1,4 +1,5 @@
 import { scripts } from './data.js';
+import CryptoJS from 'crypto-js';
 
 // DOM Elements
 const scriptsGrid = document.getElementById('scripts-grid');
@@ -20,25 +21,44 @@ let currentFilter = 'all';
 let searchQuery = '';
 let currentScriptId = null;
 let isUnlocked = false;
+let unlockedContentCache = ''; // Stores decrypted HTML temporarily
 
 // Check Unlock
 window.checkUnlock = function () {
     const input = document.getElementById('unlock-input');
     const errorMsg = document.getElementById('unlock-error');
-    if (!input) return;
+    if (!input || !currentScriptId) return;
 
-    const correctPassword = import.meta.env.VITE_UNLOCK_PASSWORD;
+    const script = scripts.find(s => s.id === currentScriptId);
+    if (!script) return;
 
-    if (input.value === correctPassword) {
-        isUnlocked = true;
-        renderScripts();
-    } else {
-        input.style.borderColor = '#ef4444';
-        if (errorMsg) errorMsg.style.display = 'block';
-        input.classList.add('shake');
-        setTimeout(() => input.classList.remove('shake'), 500);
+    try {
+        const password = input.value;
+        const bytes = CryptoJS.AES.decrypt(script.content, password);
+        const decryptedHTML = bytes.toString(CryptoJS.enc.Utf8);
+
+        // Simple check to ensure output looks like HTML/Text and decryption succeeded
+        if (decryptedHTML && decryptedHTML.length > 0) {
+            isUnlocked = true;
+            unlockedContentCache = decryptedHTML;
+            renderScripts();
+            return;
+        }
+    } catch (e) {
+        // Will fall through to error handling
     }
+
+    input.style.borderColor = '#ef4444';
+    if (errorMsg) errorMsg.style.display = 'block';
+    input.classList.add('shake');
+    setTimeout(() => input.classList.remove('shake'), 500);
 };
+
+// Clear lock when changing scripts
+function clearUnlockState() {
+    isUnlocked = false;
+    unlockedContentCache = '';
+}
 
 // Helper to fix image paths for production
 const fixImagePaths = (content) => {
@@ -57,6 +77,7 @@ const slugify = (text) => text.toString().toLowerCase().trim()
 window.filterByCategory = function (category) {
     currentFilter = category;
     currentScriptId = null; // Clear open script when changing category
+    clearUnlockState(); // Reset lock State
 
     // Clear Search Query
     searchQuery = '';
@@ -458,10 +479,13 @@ function renderScripts() {
 
             let finalHtml = '';
 
-            if (isUnlocked) {
+            const isEncrypted = script.content && script.content.startsWith('U2FsdGVkX1');
+            const displayHtml = isUnlocked ? unlockedContentCache : (!isEncrypted ? contentHtml : '');
+
+            if (!script.locked || isUnlocked) {
                 finalHtml = `
                     <div class="script-full-view" id="script-content-view">
-                        ${contentHtml}
+                        ${displayHtml}
                         ${complementaryHtml}
                     </div>
                  `;
@@ -469,7 +493,7 @@ function renderScripts() {
                 finalHtml = `
                     <div class="relative-container">
                         <div class="script-full-view blur-content" id="script-content-view">
-                            ${contentHtml}
+                            <div style="width: 100%; height: 250px; background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); border-radius: 12px;"></div>
                         </div>
                         <div class="unlock-overlay">
                             <div class="unlock-container">
@@ -825,6 +849,9 @@ function renderScriptCard(script) {
 window.openScript = function (id) {
     const script = scripts.find(s => s.id === id);
     if (script) {
+        if (currentScriptId !== id) {
+            clearUnlockState(); // User changed scripts, clear password
+        }
         currentScriptId = id;
 
         // Clear Search Query
