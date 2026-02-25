@@ -867,6 +867,19 @@ window.openScript = function (id) {
         const path = `/conectividad/${catSlug}/${scriptSlug}`;
         window.history.pushState({ filter: script.category, scriptId: id }, '', path);
 
+        // Update sidebar UI active state
+        categoryButtons.forEach(btn => {
+            if (btn.dataset.category === script.category) {
+                btn.classList.add('active');
+                if (btn.classList.contains('sub') || btn.classList.contains('has-sub')) {
+                    const group = btn.closest('.category-group');
+                    if (group) group.classList.add('expanded');
+                }
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
         // Save to browsing history
         saveToHistory(script);
 
