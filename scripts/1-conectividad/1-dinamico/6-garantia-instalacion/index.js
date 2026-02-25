@@ -4,5 +4,6 @@ export const garantiaDeInstalacion = {
     category: "Dinámico",
     summary: "Gestión de reclamos para servicios instalados hace menos de 30 días.",
     tags: ["Garantía", "Instalación", "Open"],
-    locked: true
+    locked: true,
+    isHidden: true
 };

@@ -154,6 +154,12 @@ if (hamburgerBtn) {
 
 // Handle browser back/forward
 window.addEventListener('popstate', (event) => {
+    // Specifically handle history back navigation
+    if (window.location.pathname === '/history') {
+        renderHistoryPage();
+        return;
+    }
+
     if (event.state) {
         currentFilter = event.state.filter || 'all';
         currentScriptId = event.state.scriptId || null;
@@ -194,6 +200,8 @@ function saveToHistory(script) {
         if (existingIndex > 0) {
             existing.count = (existing.count || 1) + 1;
             existing.lastVisit = new Date().toISOString();
+            if (!existing.visits) existing.visits = [existing.lastVisit]; // Backward compatibility
+            existing.visits.unshift(existing.lastVisit);
         }
 
         // Move to top (most recently visited)
@@ -206,7 +214,8 @@ function saveToHistory(script) {
             url,
             count: 1,
             firstVisit: new Date().toISOString(),
-            lastVisit: new Date().toISOString()
+            lastVisit: new Date().toISOString(),
+            visits: [new Date().toISOString()]
         });
     }
 
@@ -218,25 +227,35 @@ function saveToHistory(script) {
 
 function renderHistoryPage() {
     const conectividadSubs = ['Dinámico', 'Simétrico', 'xDSL', 'FTTH', 'GPON Corporativo', 'Internet Plus', 'Enlace Fibra', 'Satelital', 'VPN', 'SD-Wan', 'SD-Branch', 'VVIP', 'Fibertel Zone', 'Servicios Adicionales', 'LTE'];
-    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+    // Filter out hidden scripts from history
+    history = history.filter(h => {
+        const sc = scripts.find(s => s.title === h.title);
+        return sc && !sc.isHidden;
+    });
 
     // Update header
-    currentCategoryTitle.textContent = 'Historial';
+    currentCategoryTitle.textContent = 'Historial de Navegación';
     breadcrumbsContainer.innerHTML = `
         <a class="breadcrumb-item" onclick="filterByCategory('all')">
             <span>🏠</span> Inicio
         </a>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-item active">Historial</span>
+        <span class="breadcrumb-item active">Historial de Navegación</span>
     `;
     breadcrumbsContainer.classList.remove('is-home');
     document.querySelector('.content-header').classList.add('is-history');
+    scriptsGrid.className = 'scripts-grid'; // Resets to block without grid-mode
 
     const stats = document.querySelector('.stats');
-    if (stats) stats.innerHTML = `
-        <span>${history.length} entradas</span>
-        ${history.length > 0 ? `<button onclick="clearHistory()" class="btn-ghost-danger">🗑 Borrar historial</button>` : ''}
-    `;
+    if (stats) {
+        const totalLogs = history.reduce((sum, h) => sum + (h.count || 1), 0);
+        stats.innerHTML = `
+            <span>${totalLogs} logs</span>
+            ${history.length > 0 ? `<button onclick="clearHistory()" class="btn-ghost-danger">🗑 Borrar logs</button>` : ''}
+        `;
+    }
 
     if (history.length === 0) {
         scriptsGrid.innerHTML = `
@@ -254,26 +273,69 @@ function renderHistoryPage() {
             + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const rows = history.map((h, i) => `
-        <a href="${h.url}" class="history-row" title="Ir a ${h.title}">
-            <span class="history-index">${i + 1}</span>
-            <span class="history-info">
-                <span class="history-title">${h.title}</span>
-                <span class="history-path">${h.breadcrumb ? h.breadcrumb.replace(/^Inicio\s*>\s*/, '') : (conectividadSubs.includes(h.category) ? `Conectividad > ${h.category} > ${h.title}` : `${h.category} > ${h.title}`)}</span>
-                <span class="history-meta">Última visita: ${fmt(h.lastVisit || h.timestamp || '')}</span>
-            </span>
-            <span class="history-count" title="${h.count || 1} visita(s)">${h.count || 1}×</span>
-            <span class="history-arrow">→</span>
-        </a>
-    `).join('');
+    const rows = history.map((h, i) => {
+        const count = h.count || 1;
+        let pVisits = h.visits ? [...h.visits] : [h.lastVisit || h.timestamp || new Date().toISOString()];
+
+        // Fill older missing visits for accurate count reflection
+        while (pVisits.length < count) {
+            pVisits.push(h.firstVisit || pVisits[pVisits.length - 1]);
+        }
+        pVisits = pVisits.slice(0, count);
+
+        const hasDetails = count > 1 && pVisits.length > 1;
+
+        let visitsHtml = '';
+        if (hasDetails) {
+            const visitRows = pVisits.map((v, idx) => `
+                <div class="history-detail-row">
+                    <span class="history-detail-index">${idx + 1}.</span> 
+                    <span>${fmt(v)}</span>
+                </div>
+            `).join('');
+            visitsHtml = `
+            <div class="history-details" id="details-${i}">
+                <div class="history-details-inner">
+                    <div class="history-details-header">Desglose de sub-logs (últimos accesos):</div>
+                    ${visitRows}
+                </div>
+            </div>`;
+        }
+
+        const countLabel = hasDetails
+            ? `<span class="history-count history-count-expandable" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('details-${i}').classList.toggle('open');" style="cursor: pointer;" title="Ver desglose">${h.count}× <i class="fas fa-chevron-down" style="font-size:0.75rem; margin-left: 2px;"></i></span>`
+            : `<span class="history-count" title="${h.count || 1} visita(s)">${h.count || 1}×</span>`;
+
+        return `
+        <div class="history-item-container">
+            <a href="${h.url}" class="history-row" title="Ir a ${h.title}" onclick="event.preventDefault(); window.openHistoryScript(unescape('${escape(h.title)}'));">
+                <span class="history-index">${i + 1}</span>
+                <span class="history-info">
+                    <span class="history-title">${h.title}</span>
+                    <span class="history-path">${h.breadcrumb ? h.breadcrumb.replace(/^Inicio\\s*>\\s*/, '') : (conectividadSubs.includes(h.category) ? 'Conectividad > ' + h.category + ' > ' + h.title : h.category + ' > ' + h.title)}</span>
+                    <span class="history-meta">${fmt(h.lastVisit || h.timestamp || '')}</span>
+                </span>
+                ${countLabel}
+                <span class="history-arrow">→</span>
+            </a>
+            ${visitsHtml}
+        </div>`;
+    }).join('');
 
     scriptsGrid.innerHTML = `<div class="history-list">${rows}</div>`;
 }
 
 window.clearHistory = function () {
-    if (confirm('¿Borrar todo el historial?')) {
+    if (confirm('¿Borrar todos los logs?')) {
         localStorage.removeItem(HISTORY_KEY);
         renderHistoryPage();
+    }
+};
+
+window.openHistoryScript = function (title) {
+    const s = scripts.find(x => x.title === title);
+    if (s) {
+        openScript(s.id);
     }
 };
 // ──────────────────────────────────────────────────────────────────────────────
@@ -586,7 +648,7 @@ function renderScripts() {
         // If searching locally, we only care about the current open script
         if (isLocalSearch && currentScriptId && script.id !== currentScriptId) return false;
 
-        if (script.isHidden && !searchQuery) return false; // Hide technical sub-flows
+        if (script.isHidden) return false; // Prevent technical sub-flows from showing up everywhere, including search
 
         const matchesCategory = currentFilter === 'all' || script.category === currentFilter || isLocalSearch;
 

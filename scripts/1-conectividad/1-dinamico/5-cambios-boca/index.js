@@ -4,5 +4,6 @@ export const cambiosDeBoca = {
     category: "Dinámico",
     summary: "Procedimiento para solicitar el desplazamiento del módem dentro del domicilio.",
     tags: ["Service", "Boca", "Open"],
-    locked: true
+    locked: true,
+    isHidden: true
 };
