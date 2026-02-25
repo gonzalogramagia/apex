@@ -83,6 +83,8 @@ html {
     backdrop-filter: blur(10px);
     width: fit-content;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+    /* Prevent blowing out container on smaller screens even if not fully mobile */
 }
 
 .breadcrumbs:empty {
@@ -233,6 +235,9 @@ h3,
 /* Sidebar Styles */
 .sidebar {
     width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    flex-shrink: 0;
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     padding: 1rem 1.25rem;
@@ -292,7 +297,7 @@ h3,
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    padding: 0.45rem 0.8rem;
+    padding: 0.65rem 0.8rem;
     text-align: left;
     border-radius: 12px;
     font-size: 0.9rem;
@@ -465,6 +470,7 @@ h3,
 /* Main Content Styles */
 .main-content {
     flex-grow: 1;
+    width: 100%;
     padding: 2rem 3rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -1346,6 +1352,19 @@ h3,
     cursor: pointer;
     transition: all var(--transition-speed);
     padding: 0;
+    position: relative;
+    z-index: 1100;
+    /* Stays above the sidebar to act as close button */
+}
+
+.hamburger-menu.active {
+    background: var(--bg-card);
+    /* Stronger contrast against sidebar background when open */
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
 }
 
 .hamburger-menu:hover {
@@ -1380,6 +1399,8 @@ h3,
 
     .sidebar {
         width: 100%;
+        min-width: 100%;
+        max-width: 100%;
         height: auto;
         position: fixed;
         left: 0;
@@ -1396,31 +1417,60 @@ h3,
         transform: translateX(0);
     }
 
-    .sidebar::after {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s;
-        z-index: -1;
-    }
-
-    .sidebar.open::after {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
     .main-content {
         padding: 1.5rem;
+    }
+
+    .history-link {
+        display: none !important;
+    }
+
+    #logo-home {
+        pointer-events: none !important;
     }
 }
 
 @media (max-width: 768px) {
+    .breadcrumbs {
+        max-width: 100%;
+        flex-wrap: wrap;
+        /* Wrap gracefully */
+        justify-content: flex-start;
+        border-radius: 1.5rem;
+    }
+
+    .breadcrumb-item {
+        white-space: normal;
+        flex: 0 1 auto;
+    }
+
+    .breadcrumb-hover-menu {
+        left: 0;
+        min-width: unset;
+        width: max-content;
+        max-width: 85vw;
+        /* Prevent menu extending out of viewport */
+        white-space: normal;
+        background-color: var(--bg-card) !important;
+        /* Force solid color */
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        /* Prevent parent filter leaking */
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Set white for explicit requests when light mode variable might fail */
+    [data-theme="light"] .breadcrumb-hover-menu {
+        background-color: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .breadcrumb-hover-menu ul li {
+        white-space: normal;
+        line-height: 1.3;
+    }
+
     .hamburger-menu {
         display: flex;
     }
@@ -1435,8 +1485,20 @@ h3,
     }
 
     .fixed-bottom-left-group {
-        bottom: 1rem;
-        left: 1rem;
+        bottom: 1.5rem;
+        left: 1.5rem;
+        z-index: 1100;
+    }
+
+    .fixed-bottom-left-group .floater-btn:nth-child(1),
+    .fixed-bottom-left-group .floater-btn:nth-child(2) {
+        display: none !important;
+    }
+
+    .fixed-bottom-right {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 1100;
     }
 
     .floating-btn {
@@ -1445,6 +1507,42 @@ h3,
 
     .floating-btn i {
         font-size: 1.3rem;
+    }
+
+    /* Mobile Logs */
+    .history-row {
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .history-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+    }
+
+    .history-title,
+    .history-path,
+    .history-meta {
+        flex: 1 1 auto;
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        min-width: 0;
+        /* Prevent flex items from overflowing parent */
+        line-height: 1.4;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    .history-path {
+        font-size: 0.75rem;
+    }
+
+    .history-meta {
+        font-size: 0.7rem;
+        margin-top: 0.2rem;
     }
 }
 
@@ -1909,8 +2007,8 @@ mark {
 .history-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    max-width: 800px;
+    gap: 0.4rem;
+    width: 100%;
 }
 
 .history-actions {
@@ -1938,11 +2036,12 @@ mark {
 .history-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    /* Mas cuadra, estilo log */
+    padding: 0.6rem 1.25rem;
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s ease;
@@ -1964,27 +2063,40 @@ mark {
 
 .history-info {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
     flex: 1;
+    overflow: hidden;
 }
 
 .history-title {
     font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.history-meta {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex: 0 0 25%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .history-path {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--accent-primary);
     opacity: 0.75;
     font-family: 'Inter', sans-serif;
     letter-spacing: 0.01em;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .history-count {
@@ -2009,4 +2121,54 @@ mark {
 
 .history-row:hover .history-arrow {
     opacity: 1;
+}
+
+/* History Details (Logs expansion) */
+.history-item-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.history-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, margin-bottom 0.3s ease-in-out;
+}
+
+.history-details.open {
+    max-height: 500px;
+    margin-bottom: 0.5rem;
+}
+
+.history-details-inner {
+    padding: 1rem;
+    margin: 0 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    border-left: 2px solid var(--accent-primary);
+}
+
+[data-theme="dark"] .history-details-inner {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.history-details-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.history-detail-row {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    padding: 0.2rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.history-detail-index {
+    color: var(--text-secondary);
+    width: 20px;
 }
