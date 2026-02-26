@@ -173,6 +173,7 @@ window.filterByCategory = function (category) {
     document.querySelectorAll('.cat-btn').forEach(btn => {
         if (btn.dataset.category === category) {
             btn.classList.add('active');
+            btn.title = 'Ya estás aquí!';
 
             // Clean title string and remove numeric prefix
             const textContent = btn.innerText.replace(/[▲▼]/g, '').trim();
@@ -187,6 +188,7 @@ window.filterByCategory = function (category) {
             }
         } else {
             btn.classList.remove('active');
+            btn.title = '';
         }
     });
 
@@ -625,22 +627,13 @@ function handleInitialRouting() {
         }
     }
 
-    // Apply category filter
+    // Apply category filter — use filterByCategory which is the proven UI code path
     if (targetCategory) {
-        console.log("Routing: setting category", targetCategory);
-        currentFilter = targetCategory;
-        currentScriptId = null;
-        document.querySelectorAll('.cat-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.category === targetCategory);
-        });
-        const activeBtn = document.querySelector(`.cat-btn[data-category="${CSS.escape(targetCategory)}"]`);
-        if (activeBtn) {
-            const group = activeBtn.closest('.category-group');
-            if (group) group.classList.add('expanded');
-        }
+        console.log("Routing: filtering by category", targetCategory);
+        filterByCategory(targetCategory);
+    } else {
+        renderScripts();
     }
-
-    renderScripts();
 }
 
 // Render Breadcrumbs
@@ -860,28 +853,6 @@ function renderScripts() {
         }
     }
 
-    // Hide local search option if not in a script
-    if (searchOptionsContainer) {
-        // If we have a query, keep the option visible but unchecked if we are in results list
-        // Actually, if we are in results list (grid), we are NOT in a single script view, so "local search" doesn't make sense unless we consider "local" as "current category"?
-        // The original requirement was "En este script". If I am not in a script view, I shouldn't see this option.
-
-        // However, if we just exited the script view because we unchecked the box, does the box disappear?
-        // If it disappears, we can't check it again to "go back" to the script view easily.
-
-        // If currentScriptId is set (we imply we are "in" a script context), but we are showing global results...
-        // We should probably keep the checkbox visible so the user can re-enable it.
-
-        if (!currentScriptId) {
-            searchOptionsContainer.style.display = 'none';
-            if (searchLocalCheck) searchLocalCheck.checked = false;
-        } else {
-            // We are in a script context (id is set), but showing results grid.
-            // Checkbox should be visible, but unchecked.
-            searchOptionsContainer.style.display = 'flex';
-            // State is already unchecked by user
-        }
-    }
 
     // 2. Default view settings
     document.querySelector('.content-header').style.display = 'flex';
@@ -1025,10 +996,19 @@ function renderScripts() {
     if (scriptCountEl) scriptCountEl.textContent = filteredScripts.filter(s => !s.locked).length;
 
     if (filteredScripts.length === 0) {
+        // Debug: count how many scripts match the category (ignoring isHidden/locked)
+        const catMatches = scripts.filter(s => currentFilter === 'all' || s.category === currentFilter);
+        const debugInfo = `Filtro: "${currentFilter}" | Scripts totales: ${scripts.length} | En categoría: ${catMatches.length}`;
+        const isCategory = currentFilter !== 'all' && !searchQuery;
         scriptsGrid.innerHTML = `
-            <div class="no-results">
-                <p>No se encontraron scripts.</p>
-                <button class="reset-btn" onclick="filterByCategory('all')">Ver todo</button>
+            <div class="no-results" style="padding: 3rem 1rem; text-align: center;">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">${isCategory ? '📂' : '🔍'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${isCategory ? 'Categoría vacía' : 'Sin resultados'}</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    ${searchQuery ? `No hay scripts que coincidan con "<strong>${searchQuery}</strong>"` : 'No hay scripts visibles en esta categoría.'}
+                </p>
+                <p style="color: var(--text-secondary); font-size: 0.75rem; opacity: 0.6; margin-bottom: 1.5rem;">${debugInfo}</p>
+                <button class="reset-btn" onclick="filterByCategory('all')">Ver todos los scripts</button>
             </div>
         `;
         return;
@@ -1271,9 +1251,13 @@ function setupEventListeners() {
         // Sync search query to URL for global searches
         if (!isLocalSearch) {
             if (searchQuery) {
-                // Reset to root context for global search
+                // Reset to root context for global search — clear sidebar
                 currentScriptId = null;
                 currentFilter = 'all';
+                categoryButtons.forEach(b => b.classList.remove('active'));
+                const allBtn = document.querySelector('.cat-btn[data-category="all"]');
+                if (allBtn) allBtn.classList.add('active');
+                document.querySelectorAll('.category-group').forEach(g => g.classList.remove('expanded'));
                 window.history.replaceState({ filter: 'all', scriptId: null }, '', `/?q=${encodeURIComponent(searchQuery)}`);
             } else {
                 window.history.replaceState({ filter: currentFilter, scriptId: null }, '', '/');
