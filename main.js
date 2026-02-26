@@ -362,11 +362,6 @@ if (hamburgerBtn) {
 
 // Handle browser back/forward
 window.addEventListener('popstate', (event) => {
-    // Specifically handle history back navigation
-    if (window.location.pathname === '/history') {
-        renderHistoryPage();
-        return;
-    }
 
     if (event.state) {
         currentFilter = event.state.filter || 'all';
@@ -540,6 +535,12 @@ window.clearHistory = function () {
     }
 };
 
+window.navigateToHistory = function () {
+    window.history.pushState({ page: 'history' }, '', '/');
+    renderHistoryPage();
+    closeSidebarMobile();
+};
+
 window.openHistoryScript = function (title) {
     const s = scripts.find(x => x.title === title);
     if (s) {
@@ -568,12 +569,7 @@ function handleInitialRouting() {
         return;
     }
 
-    // History page
-    if (path[0] === 'history') {
-        window.history.replaceState({}, '', '/history');
-        renderHistoryPage();
-        return;
-    }
+    // History page URL → redirect to home
 
     // Any other path (e.g. /conectividad, /conectividad/dinamico, etc.) → redirect to home
     console.log("Routing: redirecting", window.location.pathname, "→ /");
