@@ -114,6 +114,51 @@ const slugify = (text) => text.toString().toLowerCase().trim()
     .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
     .replace(/\-\-+/g, '-');         // Replace multiple - with single -
 
+// Numbering Helpers
+const indexToLetter = (idx) => String.fromCharCode(97 + idx); // 0 -> a, 1 -> b...
+
+function getFullScriptTitleHTML(script) {
+    if (!script) return "";
+
+    // Find the category button in the sidebar to get its number prefix
+    const catBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.dataset.category === script.category);
+    let catPrefix = "";
+
+    if (catBtn) {
+        const span = catBtn.querySelector('span');
+        if (span) {
+            catPrefix = span.textContent.trim(); // e.g., "1.1" or "1"
+        }
+    }
+
+    let fullPrefix = "";
+
+    // Find script index in its main category list
+    const categoryScripts = scripts.filter(s => s.category === script.category && !s.parentScriptId && !s.isHidden);
+    const topLevelIdx = categoryScripts.findIndex(s => s.id === script.id);
+
+    if (topLevelIdx !== -1 && catPrefix) {
+        fullPrefix = `${catPrefix}.${indexToLetter(topLevelIdx)}`;
+    } else if (script.parentScriptId) {
+        // If it's a sub-script, find its parent numbering recursively
+        const parent = scripts.find(s => s.id === script.parentScriptId);
+        // We only need the text prefix from the parent HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = getFullScriptTitleHTML(parent);
+        const parentFullPrefix = tempDiv.querySelector('span')?.textContent || "";
+
+        const siblings = scripts.filter(s => s.parentScriptId === script.parentScriptId);
+        const sibIdx = siblings.findIndex(s => s.id === script.id);
+        fullPrefix = `${parentFullPrefix}.${sibIdx + 1}`;
+    }
+
+    if (fullPrefix) {
+        return `<span style="opacity:0.4; font-weight:400; margin-right:8px; display:inline-block;">${fullPrefix}</span> <span style="opacity:0.4; margin-right:8px;">|</span> ${script.title}`;
+    }
+
+    return script.title;
+}
+
 // Global filter function with URL update
 window.filterByCategory = function (category) {
     currentFilter = category;
@@ -188,9 +233,10 @@ function populateSidebarScripts() {
         const matchingScripts = scripts.filter(s => s.category === catName && !s.parentScriptId && !s.isHidden);
 
         if (matchingScripts.length > 0) {
-            // Find prefix like '1.1.'
+            // Find prefix like '1.1' or '2'
             const prefixMatch = btn.innerHTML.match(/<span[^>]*>\s*([\d\.]+)\s*<\/span>/);
             const prefix = prefixMatch ? prefixMatch[1] : '';
+            const indexToLetter = (idx) => String.fromCharCode(97 + idx);
 
             // Generate scripts HTML
             const scriptHtml = matchingScripts.map((s, idx) => `
@@ -199,7 +245,7 @@ function populateSidebarScripts() {
                     title="${s.title}"
                     onclick="event.stopPropagation(); window.openScript(${s.id}); closeSidebarMobile();"
                     style="display: flex; align-items: center; padding-top: 6px; padding-bottom: 6px; gap: 6px;">
-                    <span style="opacity:0.5; font-size: 0.75rem; flex-shrink: 0;">${prefix}${idx + 1}.</span> 
+                    <span style="opacity:0.4; font-size: 0.75rem; flex-shrink: 0;">${indexToLetter(idx)}</span> 
                     <span style="font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 20ch;">${s.title}</span>
                 </button>
             `).join('');
@@ -667,7 +713,7 @@ function renderScripts() {
         if (script) {
             document.querySelector('.content-header').style.display = 'flex';
             document.querySelector('.content-header').classList.remove('is-history');
-            currentCategoryTitle.textContent = script.title;
+            currentCategoryTitle.innerHTML = getFullScriptTitleHTML(script);
 
             // Show sync date instead of count
             const stats = document.querySelector('.stats');
