@@ -460,21 +460,21 @@ window.openHistoryScript = function (title) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 function handleInitialRouting() {
-    console.log("Initial routing path:", window.location.pathname);
-    // Check for ?q= search query param first
+    console.log("Routing: Initializing at", window.location.pathname);
+    const path = window.location.pathname.split('/').filter(Boolean);
+    console.log("Routing: Path segments:", path);
+
+    // Check for ?q= search query param
     const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get('q');
     if (qParam) {
+        console.log("Routing: Search query detected:", qParam);
         searchQuery = qParam;
         if (searchInput) searchInput.value = qParam;
         renderScripts();
         return;
     }
 
-    const path = window.location.pathname.split('/').filter(Boolean);
-    console.log("Parsed path segments:", path);
-
-    // If we are at the root, just render
     if (path.length === 0) {
         renderScripts();
         return;
@@ -487,23 +487,29 @@ function handleInitialRouting() {
         return;
     }
 
-    if (path[0] === 'conectividad') {
+    // Attempt to match category or script
+    if (path[0] === 'conectividad' || path[0] === 'scripts') {
         const categoryMap = {
             'conectividad': 'Conectividad',
             'dinamico': 'Dinámico',
             'simetrico': 'Simétrico',
-            'ftth': 'FTTH'
+            'ftth': 'FTTH',
+            'xdsl': 'xDSL'
         };
 
-        const targetCat = path[1] ? (categoryMap[path[1]] || path[1].charAt(0).toUpperCase() + path[1].slice(1).replace(/-/g, ' ')) : 'Conectividad';
+        const targetCatSlug = path[1] || 'conectividad';
+        const targetCat = categoryMap[targetCatSlug] || targetCatSlug.charAt(0).toUpperCase() + targetCatSlug.slice(1).replace(/-/g, ' ');
 
+        console.log("Routing: Attempting to switch to category:", targetCat);
         const catBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === targetCat);
 
         if (catBtn) {
             currentFilter = targetCat;
             categoryButtons.forEach(b => b.classList.remove('active'));
             catBtn.classList.add('active');
-            currentCategoryTitle.textContent = catBtn.innerText.replace(/[▲▼]/g, '').trim();
+            if (currentCategoryTitle) {
+                currentCategoryTitle.textContent = catBtn.innerText.replace(/[▲▼]/g, '').trim();
+            }
 
             if (catBtn.classList.contains('sub') || catBtn.classList.contains('has-sub')) {
                 const group = catBtn.closest('.category-group');
@@ -513,12 +519,18 @@ function handleInitialRouting() {
 
         renderScripts();
 
-        if (path[2]) {
-            const script = scripts.find(s => slugify(s.title) === path[2]);
-            if (script) openScript(script.id);
+        const scriptSlug = path[2];
+        if (scriptSlug) {
+            console.log("Routing: Attempting to open script with slug:", scriptSlug);
+            const script = scripts.find(s => slugify(s.title) === scriptSlug);
+            if (script) {
+                openScript(script.id);
+            } else {
+                console.warn("Routing: Script not found for slug:", scriptSlug);
+            }
         }
-    } else if (path[0]) {
-        // Handle other top-level categories
+    } else {
+        // Fallback for other top-level paths
         const catName = path[0].charAt(0).toUpperCase() + path[0].slice(1).replace(/-/g, ' ');
         const catBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === catName);
         if (catBtn) filterByCategory(catName);
