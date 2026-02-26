@@ -567,7 +567,7 @@ function handleInitialRouting() {
         return;
     }
 
-    // Root or unknown → default render
+    // Root → default render
     if (path.length === 0) {
         renderScripts();
         return;
@@ -580,42 +580,8 @@ function handleInitialRouting() {
         return;
     }
 
-
-    // Build category map dynamically from actual sidebar buttons
-    const categoryMap = {};
-    document.querySelectorAll('.cat-btn[data-category]').forEach(btn => {
-        const cat = btn.dataset.category;
-        if (cat && cat !== 'all') {
-            categoryMap[slugify(cat)] = cat;
-        }
-    });
-
-    // Collect all path slugs (e.g. ['conectividad', 'dinamico', 'sin-servicio'])
-    const slugs = path[0] === 'conectividad' ? path.slice(1) : path;
-
-    // Try each slug from right to left: first as script, then as category
-    // This handles /conectividad/dinamico/sin-servicio where 'sin-servicio' could be a script
-    for (let i = slugs.length - 1; i >= 0; i--) {
-        const slug = slugs[i];
-
-        // Try as script title
-        const script = scripts.find(s => slugify(s.title) === slug);
-        if (script) {
-            console.log("Routing: opening script", script.id);
-            openScript(script.id);
-            return;
-        }
-
-        // Try as category
-        if (categoryMap[slug]) {
-            console.log("Routing: filtering by category", categoryMap[slug]);
-            filterByCategory(categoryMap[slug]);
-            return;
-        }
-    }
-
-    // Nothing matched → redirect to home
-    console.log("Routing: no match for", path, "→ redirecting to /");
+    // Any other path (e.g. /conectividad, /conectividad/dinamico, etc.) → redirect to home
+    console.log("Routing: redirecting", window.location.pathname, "→ /");
     window.history.replaceState({}, '', '/');
     renderScripts();
 }
