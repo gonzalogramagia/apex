@@ -9,5 +9,6 @@ services:
           - key: Cache-Control
             value: public, max-age=31536000, immutable
     routes:
-      - source: /.*
+      - source: /([^.]*)
         destination: /index.html
+        type: rewrite

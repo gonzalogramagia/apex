@@ -27,10 +27,14 @@ const SESSION_KEY = 'apex_session';
 const SESSION_DURATION = 12 * 60 * 60 * 1000; // 12 hours in ms
 
 function checkSession() {
-    const session = JSON.parse(localStorage.getItem(SESSION_KEY));
-    if (session && (Date.now() - session.timestamp < SESSION_DURATION)) {
-        isUnlocked = true;
-        return true;
+    try {
+        const session = JSON.parse(localStorage.getItem(SESSION_KEY));
+        if (session && (Date.now() - session.timestamp < SESSION_DURATION)) {
+            isUnlocked = true;
+            return true;
+        }
+    } catch (e) {
+        console.error("Session parse error:", e);
     }
     localStorage.removeItem(SESSION_KEY);
     return false;
@@ -155,11 +159,25 @@ window.filterByCategory = function (category) {
 
 // Initialize
 function init() {
-    checkSession();
-    populateSidebarScripts();
-    renderScripts();
-    setupEventListeners();
-    handleInitialRouting();
+    console.log("App: Initializing...");
+    try {
+        checkSession();
+        console.log("App: Session checked, isUnlocked:", isUnlocked);
+
+        populateSidebarScripts();
+        console.log("App: Sidebar populated");
+
+        renderScripts();
+        console.log("App: Initial scripts rendered");
+
+        setupEventListeners();
+        console.log("App: Event listeners setup");
+
+        handleInitialRouting();
+        console.log("App: Initial routing handled");
+    } catch (error) {
+        console.error("App: Critical initialization error:", error);
+    }
 }
 
 function populateSidebarScripts() {
