@@ -754,7 +754,20 @@ function renderScripts() {
             const stats = document.querySelector('.stats');
             const linkHtml = script.originalScriptId ?
                 `<a href="https://knowb2b.telecom.com.ar/getf.php?f=scripting_tecnico/html/${script.originalScriptId}.html" target="_blank" class="original-script-link">Script #${script.originalScriptId} ↗</a>` : '';
-            const syncHtml = script.lastSync ? `<span>Sincronizado: ${script.lastSync}</span>` : '';
+            let syncHtml = '';
+            if (script.lastSync) {
+                // Parse "21 de Febrero de 2026" → "21/02/26"
+                const months = { 'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08', 'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12' };
+                const parts = script.lastSync.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d{4})/i);
+                let shortDate = script.lastSync;
+                if (parts) {
+                    const day = parts[1].padStart(2, '0');
+                    const month = months[parts[2].toLowerCase()] || '??';
+                    const year = parts[3].slice(-2);
+                    shortDate = `${day}/${month}/${year}`;
+                }
+                syncHtml = `<span class="sync-full">Sincronizado: ${script.lastSync}</span><span class="sync-short">Sync: ${shortDate}</span>`;
+            }
 
             stats.innerHTML = linkHtml + syncHtml;
 

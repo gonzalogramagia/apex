@@ -741,6 +741,25 @@ h3,
     gap: 1.5rem;
 }
 
+/* Sync date: full on desktop, short on mobile */
+.sync-short {
+    display: none;
+}
+
+.sync-full {
+    display: inline;
+}
+
+@media (max-width: 900px) {
+    .sync-short {
+        display: inline;
+    }
+
+    .sync-full {
+        display: none;
+    }
+}
+
 @media (max-width: 1100px) {
     .scripts-grid.grid-mode {
         grid-template-columns: repeat(2, 1fr);
