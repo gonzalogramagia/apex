@@ -179,7 +179,32 @@ html {
 
 .breadcrumb-item.active {
     cursor: default;
-    background: transparent;
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}
+
+.breadcrumb-item.active::after {
+    content: "¡Estás aquí!";
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    font-size: 10px;
+    background: var(--accent-primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.breadcrumb-item.active:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .breadcrumb-separator {
@@ -362,16 +387,22 @@ h3,
     font-weight: 700;
 }
 
-[data-theme="light"] .cat-btn.active:not(.sub):hover,
-[data-theme="light"] .category-group:has(.cat-btn.sub.active) .cat-btn.has-sub:hover {
-    background: var(--accent-primary);
-    /* Keep it blue */
-    opacity: 0.9;
+[data-theme="light"] .cat-btn.active:not(.sub):hover {
+    background: #2563eb;
+    /* A slightly darker blue than standard accent-primary */
+    color: white !important;
+}
+
+[data-theme="light"] .category-group:has(.cat-btn.sub.active)>.cat-btn.has-sub:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-primary);
 }
 
 [data-theme="light"] .cat-btn.sub.active:hover {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.25) !important;
 }
+
+
 
 .chevron {
     font-size: 0.7rem;
