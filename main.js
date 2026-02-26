@@ -460,6 +460,7 @@ window.openHistoryScript = function (title) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 function handleInitialRouting() {
+    console.log("Initial routing path:", window.location.pathname);
     // Check for ?q= search query param first
     const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get('q');
@@ -471,6 +472,13 @@ function handleInitialRouting() {
     }
 
     const path = window.location.pathname.split('/').filter(Boolean);
+    console.log("Parsed path segments:", path);
+
+    // If we are at the root, just render
+    if (path.length === 0) {
+        renderScripts();
+        return;
+    }
 
     // Handle /history route
     if (path[0] === 'history') {
