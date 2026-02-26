@@ -108,7 +108,7 @@ const fixImagePaths = (content) => {
 };
 
 // Helper to create URL slugs (handled accents: Dinámico -> dinamico)
-const slugify = (text) => text.toString().toLowerCase().trim()
+const slugify = (text) => (text == null ? '' : text.toString()).toLowerCase().trim()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // Remove accents
     .replace(/\s+/g, '-')           // Replace spaces with -
     .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
@@ -916,7 +916,7 @@ function renderScripts() {
         const matchesSearch = script.title.toLowerCase().includes(searchTerm) ||
             script.summary.toLowerCase().includes(searchTerm) ||
             (script.content && stripHtml(script.content).toLowerCase().includes(searchTerm)) ||
-            (script.originalScriptId && script.originalScriptId.toString().includes(searchTerm)) ||
+            (script.originalScriptId != null && script.originalScriptId.toString().includes(searchTerm)) ||
             script.tags.some(tag => tag.toLowerCase().includes(searchTerm));
 
         return matchesCategory && matchesSearch;
