@@ -5,7 +5,7 @@ import CryptoJS from 'crypto-js';
 const scriptsGrid = document.getElementById('scripts-grid');
 const searchInput = document.getElementById('search-input');
 const scriptCount = document.getElementById('script-count');
-const categoryButtons = document.querySelectorAll('.cat-btn');
+let categoryButtons = document.querySelectorAll('.cat-btn');
 const currentCategoryTitle = document.getElementById('current-category');
 const modal = document.getElementById('script-modal');
 const modalBody = document.getElementById('modal-body');
@@ -83,11 +83,25 @@ window.filterByCategory = function (category) {
     searchQuery = '';
     if (searchInput) searchInput.value = '';
 
+    // Collapse all category groups before re-evaluating
+    document.querySelectorAll('.category-group').forEach(group => group.classList.remove('expanded'));
+
     // Update UI active state
-    categoryButtons.forEach(btn => {
+    document.querySelectorAll('.cat-btn').forEach(btn => {
         if (btn.dataset.category === category) {
             btn.classList.add('active');
-            currentCategoryTitle.textContent = btn.innerText.replace(/[▲▼]/g, '').trim();
+
+            // Clean title string and remove numeric prefix
+            const textContent = btn.innerText.replace(/[▲▼]/g, '').trim();
+            const cleanTitle = textContent.replace(/^\d+\.\s*/, '');
+            currentCategoryTitle.textContent = cleanTitle;
+
+            // Expand all parent category groups iteratively
+            let group = btn.closest('.category-group');
+            while (group) {
+                group.classList.add('expanded');
+                group = group.parentElement ? group.parentElement.closest('.category-group') : null;
+            }
         } else {
             btn.classList.remove('active');
         }
@@ -104,9 +118,74 @@ window.filterByCategory = function (category) {
 
 // Initialize
 function init() {
+    populateSidebarScripts();
     renderScripts();
     setupEventListeners();
     handleInitialRouting();
+}
+
+function populateSidebarScripts() {
+    const parentBtns = Array.from(document.querySelectorAll('.cat-btn:not([data-category="all"])'));
+
+    parentBtns.forEach(btn => {
+        const catName = btn.dataset.category;
+        const matchingScripts = scripts.filter(s => s.category === catName && !s.parentScriptId && !s.isHidden);
+
+        if (matchingScripts.length > 0) {
+            // Find prefix like '1.1.'
+            const prefixMatch = btn.innerHTML.match(/<span[^>]*>\s*([\d\.]+)\s*<\/span>/);
+            const prefix = prefixMatch ? prefixMatch[1] : '';
+
+            // Generate scripts HTML
+            const scriptHtml = matchingScripts.map((s, idx) => `
+                <button class="cat-btn script-level-btn sub" 
+                    data-script-id="${s.id}" 
+                    title="${s.title}"
+                    onclick="event.stopPropagation(); window.openScript(${s.id}); closeSidebarMobile();">
+                    <span style="opacity:0.5; margin-right:4px;">${prefix}${idx + 1}.</span> 
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 15ch;">${s.title}</span>
+                </button>
+            `).join('');
+
+            // Make parent button expandable if not already
+            if (!btn.classList.contains('has-sub')) {
+                btn.classList.add('has-sub');
+                if (!btn.querySelector('.chevron')) {
+                    btn.innerHTML += ' <i class="fas fa-chevron-right chevron"></i>';
+                }
+            }
+
+            // Check if button is already inside a group (e.g. inside conectividad-sub)
+            const parentElement = btn.parentElement;
+
+            if (parentElement.classList.contains('category-group') && parentElement.firstElementChild === btn) {
+                // If it's already a main group head, we probably just add these inside its existing sub-nav?
+                // But for Apex structure, we only want deeper scripts under a standard category without subgroups, or under a Dinámico wrapper.
+                let subNav = parentElement.querySelector('.sub-nav');
+                if (!subNav) {
+                    subNav = document.createElement('div');
+                    subNav.className = 'sub-nav';
+                    parentElement.appendChild(subNav);
+                }
+                subNav.insertAdjacentHTML('beforeend', scriptHtml);
+            } else {
+                // Wrap it 
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'category-group';
+
+                parentElement.insertBefore(groupDiv, btn);
+                groupDiv.appendChild(btn);
+
+                const subNavDiv = document.createElement('div');
+                subNavDiv.className = 'sub-nav';
+                subNavDiv.innerHTML = scriptHtml;
+                groupDiv.appendChild(subNavDiv);
+            }
+        }
+    });
+
+    // Reattach listeners and assign array
+    categoryButtons = document.querySelectorAll('.cat-btn:not(.script-level-btn)');
 }
 
 // Logo click to go home
@@ -929,13 +1008,24 @@ window.openScript = function (id) {
         const path = `/conectividad/${catSlug}/${scriptSlug}`;
         window.history.pushState({ filter: script.category, scriptId: id }, '', path);
 
+        // Collapse all category groups before re-evaluating
+        document.querySelectorAll('.category-group').forEach(group => group.classList.remove('expanded'));
+
         // Update sidebar UI active state
-        categoryButtons.forEach(btn => {
-            if (btn.dataset.category === script.category) {
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            const isScriptBtn = btn.classList.contains('script-level-btn');
+            const isActive = isScriptBtn
+                ? btn.dataset.scriptId === id.toString()
+                : btn.dataset.category === script.category;
+
+            if (isActive) {
                 btn.classList.add('active');
-                if (btn.classList.contains('sub') || btn.classList.contains('has-sub')) {
-                    const group = btn.closest('.category-group');
-                    if (group) group.classList.add('expanded');
+
+                // Expand all parent category groups iteratively
+                let group = btn.closest('.category-group');
+                while (group) {
+                    group.classList.add('expanded');
+                    group = group.parentElement ? group.parentElement.closest('.category-group') : null;
                 }
             } else {
                 btn.classList.remove('active');
