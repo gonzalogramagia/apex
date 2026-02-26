@@ -543,8 +543,8 @@ function renderBreadcrumbs() {
                             if (childScript && !childScript.locked) {
                                 const check = (!childScript.childScripts || childScript.childScripts.length === 0) ? ' <span style="font-size:0.9em; margin-left:2px;">✅</span>' : '';
                                 const isCurrent = childId === currentScriptId;
-                                const titleStyle = isCurrent ? 'font-weight: 700;' : '';
-                                return `<li onclick="event.stopPropagation(); openScript(${childId})" style="${titleStyle}">${childScript.title}${check}</li>`;
+                                const titleStyle = isCurrent ? 'font-weight: 600;' : '';
+                                return `<li onclick="event.stopPropagation(); openScript(${childId})" style="${titleStyle}"><i class="fas fa-chevron-right hover-arrow"></i> ${childScript.title}${check}</li>`;
                             } else if (childScript && childScript.locked) {
                                 return `<li class="locked">${childScript.title} 🔒</li>`;
                             }
