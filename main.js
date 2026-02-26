@@ -544,87 +544,95 @@ window.openHistoryScript = function (title) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 function handleInitialRouting() {
-    console.log("Routing: Initializing at", window.location.pathname);
     const path = window.location.pathname.split('/').filter(Boolean);
-    console.log("Routing: Path segments:", path);
+    console.log("Routing: path =", path);
 
     // Check for ?q= search query param
     const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get('q');
     if (qParam) {
-        console.log("Routing: Search query detected:", qParam);
         searchQuery = qParam;
         if (searchInput) searchInput.value = qParam;
         renderScripts();
         return;
     }
 
+    // Root or unknown → default render
     if (path.length === 0) {
         renderScripts();
         return;
     }
 
-    // Handle /history route
+    // History page
     if (path[0] === 'history') {
         window.history.replaceState({}, '', '/history');
         renderHistoryPage();
         return;
     }
 
-    // Attempt to match category or script
-    if (path[0] === 'conectividad' || path[0] === 'scripts' || path[0] === 'catalog') {
-        const categoryMap = {
-            'conectividad': 'Conectividad',
-            'dinamico': 'Dinámico',
-            'simetrico': 'Simétrico',
-            'ftth': 'FTTH',
-            'xdsl': 'xDSL'
-        };
+    // Full category map
+    const categoryMap = {
+        'conectividad': 'Conectividad',
+        'dinamico': 'Din\u00e1mico',
+        'simetrico': 'Sim\u00e9trico',
+        'ftth': 'FTTH',
+        'xdsl': 'xDSL',
+        'gpon-corporativo': 'GPON Corporativo',
+        'internet-plus': 'Internet Plus',
+        'enlace-fibra': 'Enlace Fibra',
+        'satelital': 'Satelital',
+        'vpn': 'VPN',
+        'sd-wan': 'SD-Wan',
+        'sd-branch': 'SD-Branch',
+        'vvip': 'VVIP',
+        'fibertel-zone': 'Fibertel Zone',
+        'servicios-adicionales': 'Servicios Adicionales',
+        'lte': 'LTE',
+        'video-y-media': 'Video y Media',
+        'voz-fija': 'Voz Fija',
+        'cloud': 'Cloud',
+        'data-center': 'Data Center',
+        'seguridad': 'Seguridad',
+        'innovacion': 'Innovaci\u00f3n',
+        'movil': 'M\u00f3vil',
+        'servicios-especiales': 'Servicios Especiales',
+        'contingencia-icd': 'Contingencia ICD',
+        'spam-whitelist': 'SPAM-WHITELIST',
+    };
 
-        const targetCatSlug = path[1];
-        if (targetCatSlug) {
-            const targetCat = categoryMap[targetCatSlug] || targetCatSlug.charAt(0).toUpperCase() + targetCatSlug.slice(1).replace(/-/g, ' ');
-            console.log("Routing: targetCat segment:", targetCat);
+    // /conectividad/<cat>/<script> — or /<cat>/<script>
+    const catSlug = path[0] === 'conectividad' ? path[1] : path[0];
+    const scriptSlug = path[0] === 'conectividad' ? path[2] : path[1];
 
-            const catBtn = Array.from(categoryButtons).find(btn =>
-                btn.dataset.category.toLowerCase() === targetCat.toLowerCase() ||
-                slugify(btn.dataset.category) === targetCatSlug
-            );
+    const targetCategory = catSlug ? (categoryMap[catSlug] || null) : null;
+    console.log("Routing: targetCategory =", targetCategory, "| scriptSlug =", scriptSlug);
 
-            if (catBtn) {
-                currentFilter = catBtn.dataset.category;
-                categoryButtons.forEach(b => b.classList.remove('active'));
-                catBtn.classList.add('active');
-
-                const group = catBtn.closest('.category-group');
-                if (group) group.classList.add('expanded');
-            }
-        }
-
-        const scriptSlug = path[2] || (path[0] === 'conectividad' ? null : path[1]);
-        if (scriptSlug && scriptSlug !== path[1]) {
-            console.log("Routing: Attempting to open script with slug:", scriptSlug);
-            const script = scripts.find(s => slugify(s.title) === scriptSlug);
-            if (script) {
-                openScript(script.id);
-                return; // openScript handles the render
-            }
-        }
-
-        renderScripts();
-    } else {
-        // Fallback for other top-level paths (eg: /Dinamico)
-        const possibleCat = path[0].charAt(0).toUpperCase() + path[0].slice(1).replace(/-/g, ' ');
-        const catBtn = Array.from(categoryButtons).find(btn =>
-            btn.dataset.category.toLowerCase() === path[0].toLowerCase() ||
-            btn.dataset.category === possibleCat
-        );
-        if (catBtn) {
-            filterByCategory(catBtn.dataset.category);
-        } else {
-            renderScripts(); // Ensure we render at least the default view
+    // Try opening script directly first (handles category + script in one)
+    if (scriptSlug) {
+        const script = scripts.find(s => slugify(s.title) === scriptSlug);
+        if (script) {
+            console.log("Routing: opening script", script.id);
+            openScript(script.id);
+            return;
         }
     }
+
+    // Apply category filter
+    if (targetCategory) {
+        console.log("Routing: setting category", targetCategory);
+        currentFilter = targetCategory;
+        currentScriptId = null;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.category === targetCategory);
+        });
+        const activeBtn = document.querySelector(`.cat-btn[data-category="${CSS.escape(targetCategory)}"]`);
+        if (activeBtn) {
+            const group = activeBtn.closest('.category-group');
+            if (group) group.classList.add('expanded');
+        }
+    }
+
+    renderScripts();
 }
 
 // Render Breadcrumbs
