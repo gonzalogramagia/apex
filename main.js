@@ -222,6 +222,26 @@ function init() {
         console.log("App: Initial routing handled");
     } catch (error) {
         console.error("App: Critical initialization error:", error);
+        // Show error on screen for debugging on mobile/production
+        const grid = document.getElementById('scripts-grid');
+        if (grid) {
+            grid.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <h3>Error de Inicialización</h3>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">${error.message}</p>
+                    <button onclick="location.reload()" style="margin-top: 1.5rem; padding: 0.5rem 1rem; background: var(--accent-primary); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        }
+    } finally {
+        const loader = document.querySelector('.loader');
+        if (loader && !currentScriptId && currentFilter === 'all' && searchQuery === '') {
+            // Only hide loader if we didn't start rendering something else
+            // Actually renderScripts handles the grid anyway
+        }
     }
 }
 
@@ -552,7 +572,7 @@ function handleInitialRouting() {
     }
 
     // Attempt to match category or script
-    if (path[0] === 'conectividad' || path[0] === 'scripts') {
+    if (path[0] === 'conectividad' || path[0] === 'scripts' || path[0] === 'catalog') {
         const categoryMap = {
             'conectividad': 'Conectividad',
             'dinamico': 'Dinámico',
@@ -561,43 +581,49 @@ function handleInitialRouting() {
             'xdsl': 'xDSL'
         };
 
-        const targetCatSlug = path[1] || 'conectividad';
-        const targetCat = categoryMap[targetCatSlug] || targetCatSlug.charAt(0).toUpperCase() + targetCatSlug.slice(1).replace(/-/g, ' ');
+        const targetCatSlug = path[1];
+        if (targetCatSlug) {
+            const targetCat = categoryMap[targetCatSlug] || targetCatSlug.charAt(0).toUpperCase() + targetCatSlug.slice(1).replace(/-/g, ' ');
+            console.log("Routing: targetCat segment:", targetCat);
 
-        console.log("Routing: Attempting to switch to category:", targetCat);
-        const catBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === targetCat);
+            const catBtn = Array.from(categoryButtons).find(btn =>
+                btn.dataset.category.toLowerCase() === targetCat.toLowerCase() ||
+                slugify(btn.dataset.category) === targetCatSlug
+            );
 
-        if (catBtn) {
-            currentFilter = targetCat;
-            categoryButtons.forEach(b => b.classList.remove('active'));
-            catBtn.classList.add('active');
-            if (currentCategoryTitle) {
-                currentCategoryTitle.textContent = catBtn.innerText.replace(/[▲▼]/g, '').trim();
-            }
+            if (catBtn) {
+                currentFilter = catBtn.dataset.category;
+                categoryButtons.forEach(b => b.classList.remove('active'));
+                catBtn.classList.add('active');
 
-            if (catBtn.classList.contains('sub') || catBtn.classList.contains('has-sub')) {
                 const group = catBtn.closest('.category-group');
                 if (group) group.classList.add('expanded');
             }
         }
 
-        renderScripts();
-
-        const scriptSlug = path[2];
-        if (scriptSlug) {
+        const scriptSlug = path[2] || (path[0] === 'conectividad' ? null : path[1]);
+        if (scriptSlug && scriptSlug !== path[1]) {
             console.log("Routing: Attempting to open script with slug:", scriptSlug);
             const script = scripts.find(s => slugify(s.title) === scriptSlug);
             if (script) {
                 openScript(script.id);
-            } else {
-                console.warn("Routing: Script not found for slug:", scriptSlug);
+                return; // openScript handles the render
             }
         }
+
+        renderScripts();
     } else {
-        // Fallback for other top-level paths
-        const catName = path[0].charAt(0).toUpperCase() + path[0].slice(1).replace(/-/g, ' ');
-        const catBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === catName);
-        if (catBtn) filterByCategory(catName);
+        // Fallback for other top-level paths (eg: /Dinamico)
+        const possibleCat = path[0].charAt(0).toUpperCase() + path[0].slice(1).replace(/-/g, ' ');
+        const catBtn = Array.from(categoryButtons).find(btn =>
+            btn.dataset.category.toLowerCase() === path[0].toLowerCase() ||
+            btn.dataset.category === possibleCat
+        );
+        if (catBtn) {
+            filterByCategory(catBtn.dataset.category);
+        } else {
+            renderScripts(); // Ensure we render at least the default view
+        }
     }
 }
 
