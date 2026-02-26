@@ -993,21 +993,28 @@ function renderScripts() {
     if (scriptCountEl) scriptCountEl.textContent = filteredScripts.filter(s => !s.locked).length;
 
     if (filteredScripts.length === 0) {
-        // Debug: count how many scripts match the category (ignoring isHidden/locked)
-        const catMatches = scripts.filter(s => currentFilter === 'all' || s.category === currentFilter);
-        const debugInfo = `Filtro: "${currentFilter}" | Scripts totales: ${scripts.length} | En categoría: ${catMatches.length}`;
-        const isCategory = currentFilter !== 'all' && !searchQuery;
-        scriptsGrid.innerHTML = `
-            <div class="no-results" style="padding: 3rem 1rem; text-align: center;">
-                <div style="font-size: 2.5rem; margin-bottom: 1rem;">${isCategory ? '📂' : '🔍'}</div>
-                <h3 style="margin: 0 0 0.5rem;">${isCategory ? 'Categoría vacía' : 'Sin resultados'}</h3>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                    ${searchQuery ? `No hay scripts que coincidan con "<strong>${searchQuery}</strong>"` : 'No hay scripts visibles en esta categoría.'}
-                </p>
-                <p style="color: var(--text-secondary); font-size: 0.75rem; opacity: 0.6; margin-bottom: 1.5rem;">${debugInfo}</p>
-                <button class="reset-btn" onclick="filterByCategory('all')">Ver todos los scripts</button>
-            </div>
-        `;
+        if (searchQuery) {
+            scriptsGrid.innerHTML = `
+                <div class="no-results" style="padding: 3rem 1rem; text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔍</div>
+                    <h3 style="margin: 0 0 0.5rem;">Sin resultados</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        No hay scripts que coincidan con "<strong>${searchQuery}</strong>"
+                    </p>
+                </div>
+            `;
+        } else {
+            scriptsGrid.innerHTML = `
+                <div class="no-results" style="padding: 3rem 1rem; text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">📂</div>
+                    <h3 style="margin: 0 0 0.5rem;">Categoría vacía</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        No hay scripts visibles en esta categoría.
+                    </p>
+                    <button class="reset-btn" onclick="filterByCategory('all')">Ver todos los scripts</button>
+                </div>
+            `;
+        }
         return;
     }
 
