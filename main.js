@@ -580,60 +580,44 @@ function handleInitialRouting() {
         return;
     }
 
-    // Full category map
-    const categoryMap = {
-        'conectividad': 'Conectividad',
-        'dinamico': 'Din\u00e1mico',
-        'simetrico': 'Sim\u00e9trico',
-        'ftth': 'FTTH',
-        'xdsl': 'xDSL',
-        'gpon-corporativo': 'GPON Corporativo',
-        'internet-plus': 'Internet Plus',
-        'enlace-fibra': 'Enlace Fibra',
-        'satelital': 'Satelital',
-        'vpn': 'VPN',
-        'sd-wan': 'SD-Wan',
-        'sd-branch': 'SD-Branch',
-        'vvip': 'VVIP',
-        'fibertel-zone': 'Fibertel Zone',
-        'servicios-adicionales': 'Servicios Adicionales',
-        'lte': 'LTE',
-        'video-y-media': 'Video y Media',
-        'voz-fija': 'Voz Fija',
-        'cloud': 'Cloud',
-        'data-center': 'Data Center',
-        'seguridad': 'Seguridad',
-        'innovacion': 'Innovaci\u00f3n',
-        'movil': 'M\u00f3vil',
-        'servicios-especiales': 'Servicios Especiales',
-        'contingencia-icd': 'Contingencia ICD',
-        'spam-whitelist': 'SPAM-WHITELIST',
-    };
 
-    // /conectividad/<cat>/<script> — or /<cat>/<script>
-    const catSlug = path[0] === 'conectividad' ? path[1] : path[0];
-    const scriptSlug = path[0] === 'conectividad' ? path[2] : path[1];
+    // Build category map dynamically from actual sidebar buttons
+    const categoryMap = {};
+    document.querySelectorAll('.cat-btn[data-category]').forEach(btn => {
+        const cat = btn.dataset.category;
+        if (cat && cat !== 'all') {
+            categoryMap[slugify(cat)] = cat;
+        }
+    });
 
-    const targetCategory = catSlug ? (categoryMap[catSlug] || null) : null;
-    console.log("Routing: targetCategory =", targetCategory, "| scriptSlug =", scriptSlug);
+    // Collect all path slugs (e.g. ['conectividad', 'dinamico', 'sin-servicio'])
+    const slugs = path[0] === 'conectividad' ? path.slice(1) : path;
 
-    // Try opening script directly first (handles category + script in one)
-    if (scriptSlug) {
-        const script = scripts.find(s => slugify(s.title) === scriptSlug);
+    // Try each slug from right to left: first as script, then as category
+    // This handles /conectividad/dinamico/sin-servicio where 'sin-servicio' could be a script
+    for (let i = slugs.length - 1; i >= 0; i--) {
+        const slug = slugs[i];
+
+        // Try as script title
+        const script = scripts.find(s => slugify(s.title) === slug);
         if (script) {
             console.log("Routing: opening script", script.id);
             openScript(script.id);
             return;
         }
+
+        // Try as category
+        if (categoryMap[slug]) {
+            console.log("Routing: filtering by category", categoryMap[slug]);
+            filterByCategory(categoryMap[slug]);
+            return;
+        }
     }
 
-    // Apply category filter — use filterByCategory which is the proven UI code path
-    if (targetCategory) {
-        console.log("Routing: filtering by category", targetCategory);
-        filterByCategory(targetCategory);
-    } else {
-        renderScripts();
-    }
+    // Nothing matched → redirect to home
+    console.log("Routing: no match for", path, "→ redirecting to /");
+    window.history.replaceState({}, '', '/');
+    renderScripts();
 }
 
 // Render Breadcrumbs
