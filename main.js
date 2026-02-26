@@ -23,6 +23,27 @@ let currentScriptId = null;
 let isUnlocked = false;
 let unlockedContentCache = ''; // Stores decrypted HTML temporarily
 
+const SESSION_KEY = 'apex_session';
+const SESSION_DURATION = 12 * 60 * 60 * 1000; // 12 hours in ms
+
+function checkSession() {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (session && (Date.now() - session.timestamp < SESSION_DURATION)) {
+        isUnlocked = true;
+        return true;
+    }
+    localStorage.removeItem(SESSION_KEY);
+    return false;
+}
+
+function saveSession(password) {
+    const session = {
+        timestamp: Date.now(),
+        token: btoa(password) // Simple obfuscation
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
 // Check Unlock
 window.checkUnlock = function () {
     const input = document.getElementById('unlock-input');
@@ -39,6 +60,7 @@ window.checkUnlock = function () {
         // 1. Check against master password (from .env)
         if (masterPassword && password === masterPassword) {
             isUnlocked = true;
+            saveSession(password);
             unlockedContentCache = script.content;
             renderScripts();
             return;
@@ -51,6 +73,7 @@ window.checkUnlock = function () {
         // Simple check to ensure output looks like HTML/Text and decryption succeeded
         if (decryptedHTML && decryptedHTML.length > 0) {
             isUnlocked = true;
+            saveSession(password);
             unlockedContentCache = decryptedHTML;
             renderScripts();
             return;
@@ -65,10 +88,13 @@ window.checkUnlock = function () {
     setTimeout(() => input.classList.remove('shake'), 500);
 };
 
-// Clear lock when changing scripts
+// Clear lock when changing scripts (Optional: decide if session should persisted across scripts)
 function clearUnlockState() {
-    isUnlocked = false;
-    unlockedContentCache = '';
+    // We keep isUnlocked true if session is valid
+    if (!checkSession()) {
+        isUnlocked = false;
+        unlockedContentCache = '';
+    }
 }
 
 // Helper to fix image paths for production
@@ -129,6 +155,7 @@ window.filterByCategory = function (category) {
 
 // Initialize
 function init() {
+    checkSession();
     populateSidebarScripts();
     renderScripts();
     setupEventListeners();
@@ -634,7 +661,20 @@ function renderScripts() {
             let finalHtml = '';
 
             const isEncrypted = script.content && script.content.startsWith('U2FsdGVkX1');
-            const displayHtml = isUnlocked ? unlockedContentCache : (!isEncrypted ? contentHtml : '');
+
+            // Try to auto-decrypt if session exists and script is encrypted
+            if (isUnlocked && !unlockedContentCache && isEncrypted) {
+                const session = JSON.parse(localStorage.getItem(SESSION_KEY));
+                if (session && session.token) {
+                    try {
+                        const password = atob(session.token);
+                        const bytes = CryptoJS.AES.decrypt(script.content, password);
+                        unlockedContentCache = bytes.toString(CryptoJS.enc.Utf8);
+                    } catch (e) { }
+                }
+            }
+
+            const displayHtml = isUnlocked ? (unlockedContentCache || script.content) : (!isEncrypted ? contentHtml : '');
 
             // Force unlock overlay if content is encrypted, explicitly protected, or locked
             if ((isEncrypted && !isUnlocked) || (script.isProtected && !isUnlocked) || (script.locked && !isUnlocked)) {
