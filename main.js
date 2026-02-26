@@ -741,7 +741,7 @@ function renderScripts() {
         // If searching locally, we only care about the current open script
         if (isLocalSearch && currentScriptId && script.id !== currentScriptId) return false;
 
-        if (script.isHidden) return false; // Prevent technical sub-flows from showing up everywhere, including search
+        if (script.isHidden || script.locked) return false; // Prevent technical sub-flows or locked scripts from showing up in search
 
         const matchesCategory = currentFilter === 'all' || script.category === currentFilter || isLocalSearch;
 
