@@ -1,10 +1,13 @@
 services:
-  - type: web
+  - type: static
     name: apex-private
-    env: static
     buildCommand: npm run build
     publishPath: dist
+    headers:
+      - path: /assets/*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
     routes:
-      - type: rewrite
-        source: /.*
+      - source: /.*
         destination: /index.html
