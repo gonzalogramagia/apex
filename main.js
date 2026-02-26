@@ -192,12 +192,7 @@ window.filterByCategory = function (category) {
         }
     });
 
-    const slug = category === 'all' ? '' : slugify(category);
-    let path = '/';
-    if (category === 'Conectividad') path = '/conectividad';
-    else if (category !== 'all') path = `/conectividad/${slug}`;
-
-    window.history.pushState({ filter: category, scriptId: null }, '', path);
+    window.history.pushState({ filter: category, scriptId: null }, '', '/');
     renderScripts();
 };
 
@@ -1146,11 +1141,8 @@ window.openScript = function (id) {
         // Update Filter to match script category
         currentFilter = script.category;
 
-        // Update URL
-        const catSlug = slugify(script.category);
-        const scriptSlug = slugify(script.title);
-        const path = `/conectividad/${catSlug}/${scriptSlug}`;
-        window.history.pushState({ filter: script.category, scriptId: id }, '', path);
+        // Keep URL as /
+        window.history.pushState({ filter: script.category, scriptId: id }, '', '/');
 
         // Collapse all category groups before re-evaluating
         document.querySelectorAll('.category-group').forEach(group => group.classList.remove('expanded'));
