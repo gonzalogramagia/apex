@@ -356,6 +356,21 @@ h3,
     transition: all var(--transition-speed);
 }
 
+/* Sidebar category number prefix: gray + pipe separator */
+.cat-btn>span:first-child {
+    opacity: 0.45;
+    font-size: 0.78rem;
+    font-weight: 400;
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+.cat-btn:not(.script-level-btn)>span:first-child::after {
+    content: " |";
+    opacity: 0.6;
+    margin-left: 2px;
+}
+
 .cat-btn:hover {
     background: var(--glass-bg);
     color: var(--text-primary);

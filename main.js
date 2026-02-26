@@ -120,43 +120,40 @@ const indexToLetter = (idx) => String.fromCharCode(97 + idx); // 0 -> a, 1 -> b.
 function getFullScriptTitleHTML(script) {
     if (!script) return "";
 
-    // Find the category button in the sidebar to get its number prefix
-    const catBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.dataset.category === script.category);
-    let catPrefix = "";
+    // Walk up to the top-level ancestor (no parentScriptId)
+    let ancestor = script;
+    let depth = 0;
+    while (ancestor.parentScriptId) {
+        const parent = scripts.find(s => s.id === ancestor.parentScriptId);
+        if (!parent) break;
+        ancestor = parent;
+        depth++;
+    }
 
+    // Find the category button to get the numeric prefix (e.g., "1.1")
+    const catBtn = Array.from(document.querySelectorAll('.cat-btn')).find(b => b.dataset.category === ancestor.category);
+    let catPrefix = "";
     if (catBtn) {
         const span = catBtn.querySelector('span');
         if (span) {
-            catPrefix = span.textContent.trim(); // e.g., "1.1" or "1"
+            catPrefix = span.textContent.trim().replace(/\s*\|\s*$/, '').trim();
         }
     }
 
-    let fullPrefix = "";
+    if (!catPrefix) return script.title;
 
-    // Find script index in its main category list
-    const categoryScripts = scripts.filter(s => s.category === script.category && !s.parentScriptId && !s.isHidden);
-    const topLevelIdx = categoryScripts.findIndex(s => s.id === script.id);
+    // Find top-level ancestor's index in its category (for the letter)
+    const categoryScripts = scripts.filter(s => s.category === ancestor.category && !s.parentScriptId && !s.isHidden);
+    const topLevelIdx = categoryScripts.findIndex(s => s.id === ancestor.id);
+    if (topLevelIdx === -1) return script.title;
 
-    if (topLevelIdx !== -1 && catPrefix) {
-        fullPrefix = `${catPrefix}.${indexToLetter(topLevelIdx)}`;
-    } else if (script.parentScriptId) {
-        // If it's a sub-script, find its parent numbering recursively
-        const parent = scripts.find(s => s.id === script.parentScriptId);
-        // We only need the text prefix from the parent HTML
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = getFullScriptTitleHTML(parent);
-        const parentFullPrefix = tempDiv.querySelector('span')?.textContent || "";
+    // Root prefix: e.g., "1.1.a"
+    const rootPrefix = `${catPrefix}.${indexToLetter(topLevelIdx)}`;
 
-        const siblings = scripts.filter(s => s.parentScriptId === script.parentScriptId);
-        const sibIdx = siblings.findIndex(s => s.id === script.id);
-        fullPrefix = `${parentFullPrefix}.${sibIdx + 1}`;
-    }
+    // Sub-scripts add one dot per depth level: "1.1.a." / "1.1.a.." / etc.
+    const fullPrefix = depth === 0 ? rootPrefix : rootPrefix + '.'.repeat(depth);
 
-    if (fullPrefix) {
-        return `<span style="opacity:0.4; font-weight:400; margin-right:8px; display:inline-block;">${fullPrefix}</span> <span style="opacity:0.4; margin-right:8px;">|</span> ${script.title}`;
-    }
-
-    return script.title;
+    return `<span style="opacity:0.45; font-weight:700; margin-right:10px; display:inline-block;">${fullPrefix}</span><span style="opacity:0.3; margin:0 10px;">|</span>${script.title}`;
 }
 
 // Global filter function with URL update
@@ -211,6 +208,17 @@ function init() {
 
         populateSidebarScripts();
         console.log("App: Sidebar populated");
+
+        // Style category number spans in sidebar (gray, no pipe)
+        document.querySelectorAll('.cat-btn:not(.script-level-btn) > span').forEach(span => {
+            const text = span.textContent.trim();
+            if (/^\d/.test(text)) {
+                span.style.opacity = '0.45';
+                span.style.fontWeight = '400';
+                span.style.fontSize = '0.78rem';
+                span.style.marginRight = '6px';
+            }
+        });
 
         renderScripts();
         console.log("App: Initial scripts rendered");
@@ -944,7 +952,15 @@ function renderScripts() {
         } else {
             const activeBtn = Array.from(categoryButtons).find(btn => btn.dataset.category === currentFilter);
             if (activeBtn) {
-                currentCategoryTitle.textContent = activeBtn.innerText.replace(/[▲▼]/g, '').trim();
+                const numSpan = activeBtn.querySelector('span');
+                // Extract number prefix (strip pipe if already added)
+                const numText = numSpan ? numSpan.textContent.trim().replace(/\s*\|\s*$/, '').trim() : '';
+                const catName = currentFilter;
+                if (numText) {
+                    currentCategoryTitle.innerHTML = `<span style="opacity:0.45; font-weight:700; margin-right:10px; display:inline-block;">${numText}</span><span style="opacity:0.3; margin:0 10px;">|</span>${catName}`;
+                } else {
+                    currentCategoryTitle.textContent = catName;
+                }
             } else {
                 if (currentFilter === 'Conectividad') currentCategoryTitle.textContent = 'Conectividad';
                 else if (currentFilter === 'all') currentCategoryTitle.textContent = 'Todos los Scripts';
