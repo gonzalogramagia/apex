@@ -1,6 +1,8 @@
 export const microcortes = {
   id: 1005,
-  locked: true,
+  isProtected: true,
+  isProtected: true,
+  isHidden: false,
   title: "Microcortes",
   category: "Dinámico",
   summary: "Diagnóstico de intermitencia y microcortes. Recambio de equipos Docsis 2.0 y validación de masivos.",

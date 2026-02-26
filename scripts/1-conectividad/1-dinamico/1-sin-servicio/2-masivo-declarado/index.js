@@ -2,14 +2,14 @@ import { fragments } from '../../../../../fragments.js';
 
 export const masivoDeclarado = {
     id: 1010,
-  locked: true,
+  isProtected: true,
+  isHidden: true,
     title: "Masivo Declarado",
     category: "Dinámico",
     summary: "Procedimiento para carga de ticket en ECO ante un incidente masivo declarado, considerando las opciones con y sin seguimiento E2E.",
     tags: ["Dinámico", "Sin Servicio", "Masivo Declarado", "ECO"],
     lastSync: "21 de Febrero de 2026",
     originalScriptId: "944",
-    isHidden: true, // Hid automatically from main search unless specifically linked or searchable, usually child scripts can be hidden if they are just steps.
     parentScriptId: 1001,
     complementaryContent: [],
     content: `

@@ -1,9 +1,9 @@
 export const sinMasivoDeclarado = {
   id: 1009,
-  locked: true,
+  isProtected: true,
+  isHidden: true,
   title: "Sin masivo declarado",
   category: "Dinámico",
-  isHidden: true,
   parentScriptId: 1001,
   summary: "Verificación de señal del cablemódem en CODI+ o NXT cuando no existe falla masiva declarada.",
   tags: ["Sin Masivo", "CODI+", "NXT", "Señal", "Cablemódem"],

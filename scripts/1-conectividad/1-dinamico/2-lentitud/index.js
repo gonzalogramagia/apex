@@ -2,7 +2,9 @@ import { fragments } from '../../../../fragments.js';
 
 export const lentitud = {
   id: 1004,
-  locked: true,
+  isProtected: true,
+  isProtected: true,
+  isHidden: false,
   title: "Lentitud",
   category: "Dinámico",
   summary: "Diagnóstico de navegación lenta, validación de masivos y recambio de equipos Docsis 2.0.",

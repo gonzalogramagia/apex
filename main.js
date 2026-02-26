@@ -141,16 +141,18 @@ function populateSidebarScripts() {
                 <button class="cat-btn script-level-btn sub" 
                     data-script-id="${s.id}" 
                     title="${s.title}"
-                    onclick="event.stopPropagation(); window.openScript(${s.id}); closeSidebarMobile();">
-                    <span style="opacity:0.5; margin-right:4px;">${prefix}${idx + 1}.</span> 
-                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 15ch;">${s.title}</span>
+                    onclick="event.stopPropagation(); window.openScript(${s.id}); closeSidebarMobile();"
+                    style="display: flex; align-items: center; padding-top: 6px; padding-bottom: 6px; gap: 6px;">
+                    <span style="opacity:0.5; font-size: 0.75rem; flex-shrink: 0;">${prefix}${idx + 1}.</span> 
+                    <span style="font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 20ch;">${s.title}</span>
                 </button>
             `).join('');
 
             // Make parent button expandable if not already
             if (!btn.classList.contains('has-sub')) {
                 btn.classList.add('has-sub');
-                if (!btn.querySelector('.chevron')) {
+                // Only add chevron if it's a main category (not a .sub)
+                if (!btn.classList.contains('sub') && !btn.querySelector('.chevron')) {
                     btn.innerHTML += ' <i class="fas fa-chevron-right chevron"></i>';
                 }
             }
@@ -623,8 +625,8 @@ function renderScripts() {
             const isEncrypted = script.content && script.content.startsWith('U2FsdGVkX1');
             const displayHtml = isUnlocked ? unlockedContentCache : (!isEncrypted ? contentHtml : '');
 
-            // Force unlock overlay if content is encrypted and not yet unlocked OR if explicitly locked
-            if ((isEncrypted && !isUnlocked) || (script.locked && !isUnlocked)) {
+            // Force unlock overlay if content is encrypted, explicitly protected, or locked
+            if ((isEncrypted && !isUnlocked) || (script.isProtected && !isUnlocked) || (script.locked && !isUnlocked)) {
                 finalHtml = `
                     <div class="relative-container">
                         <div class="script-full-view blur-content" id="script-content-view">
@@ -793,6 +795,7 @@ function renderScripts() {
 
         scriptsGrid.innerHTML = mainCategories.map(cat => {
             const catScripts = scripts.filter(s => !s.locked && !s.isHidden && (s.category === cat || (cat === 'Conectividad' && conectividadSubs.includes(s.category))));
+            const protectedScripts = scripts.filter(s => s.isProtected && !s.isHidden && (s.category === cat || (cat === 'Conectividad' && conectividadSubs.includes(s.category))));
             const hasScripts = catScripts.length > 0;
 
             return `
@@ -801,7 +804,7 @@ function renderScripts() {
                     <div class="cat-card-icon">${hasScripts ? '⚡' : '🔒'}</div>
                     <h3>${cat}</h3>
                     ${hasScripts ? `<div class="cat-pill">Contiene ${catScripts.length} ${catScripts.length === 1 ? 'script navegable' : 'scripts navegables'}</div>` : ''}
-                    <span class="cat-card-link">${hasScripts ? 'Seleccionar →' : 'Próximamente'}</span>
+                    <span class="cat-card-link">${hasScripts ? 'Seleccionar →' : '🔒 Próximamente'}</span>
                 </div>
             `;
         }).join('');
@@ -820,7 +823,7 @@ function renderScripts() {
                     <div class="cat-card-icon">${hasScripts ? '📁' : '🔒'}</div>
                     <h3>${sub}</h3>
                     ${hasScripts ? `<div class="cat-pill">Contiene ${subScripts.length} ${subScripts.length === 1 ? 'script navegable' : 'scripts navegables'}</div>` : ''}
-                    <span class="cat-card-link">${hasScripts ? 'Explorar scripts →' : 'Próximamente'}</span>
+                    <span class="cat-card-link">${hasScripts ? 'Explorar scripts →' : '🔒 Próximamente'}</span>
                 </div>
             `;
         }).join('');
@@ -970,7 +973,7 @@ function renderScriptCard(script) {
     let extraFooter = '';
 
     if (script.locked) {
-        extraFooter = '<div class="card-footer"><span class="tag">Próximamente</span></div>';
+        extraFooter = '<div class="card-footer"><span class="tag" style="background: transparent; border: none; padding-left: 0; color: var(--text-secondary); font-weight: 500;">🔒 Próximamente</span></div>';
     } else {
         const text = childCount === 1 ? 'Contiene 1 script navegable' : `Contiene ${childCount} scripts navegables`;
         extraFooter = `<div class="card-footer" style="margin-top: 0.5rem;"><span class="tag" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-primary); border: 1px solid rgba(59, 130, 246, 0.2);">${text}</span></div>`;
@@ -979,7 +982,7 @@ function renderScriptCard(script) {
     return `
         <div class="script-card ${script.locked ? 'is-locked' : ''}" 
              ${script.locked ? '' : `onclick="openScript(${script.id})"`}>
-            <span class="card-category">${script.category} ${script.locked ? '• 🔒' : ''}</span>
+            <span class="card-category">${script.category}</span>
             <h3>${script.title}</h3>
             <p class="card-preview">${script.locked ? '' : script.summary}</p>
             ${extraFooter}
