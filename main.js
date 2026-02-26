@@ -623,14 +623,8 @@ function renderScripts() {
             const isEncrypted = script.content && script.content.startsWith('U2FsdGVkX1');
             const displayHtml = isUnlocked ? unlockedContentCache : (!isEncrypted ? contentHtml : '');
 
-            if (!script.locked || isUnlocked) {
-                finalHtml = `
-                    <div class="script-full-view" id="script-content-view">
-                        ${displayHtml}
-                        ${complementaryHtml}
-                    </div>
-                 `;
-            } else {
+            // Force unlock overlay if content is encrypted and not yet unlocked OR if explicitly locked
+            if ((isEncrypted && !isUnlocked) || (script.locked && !isUnlocked)) {
                 finalHtml = `
                     <div class="relative-container">
                         <div class="script-full-view blur-content" id="script-content-view">
@@ -652,6 +646,13 @@ function renderScripts() {
                         </div>
                     </div>
                     ${complementaryHtml ? `<div class="script-full-view">${complementaryHtml}</div>` : ''}
+                 `;
+            } else {
+                finalHtml = `
+                    <div class="script-full-view" id="script-content-view">
+                        ${displayHtml}
+                        ${complementaryHtml}
+                    </div>
                  `;
             }
 

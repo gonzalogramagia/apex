@@ -1,5 +1,6 @@
 export const sinMasivoDeclarado = {
   id: 1009,
+  locked: true,
   title: "Sin masivo declarado",
   category: "Dinámico",
   isHidden: true,

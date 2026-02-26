@@ -2,6 +2,7 @@ import { fragments } from '../../../../../fragments.js';
 
 export const masivoDeclarado = {
     id: 1010,
+  locked: true,
     title: "Masivo Declarado",
     category: "Dinámico",
     summary: "Procedimiento para carga de ticket en ECO ante un incidente masivo declarado, considerando las opciones con y sin seguimiento E2E.",

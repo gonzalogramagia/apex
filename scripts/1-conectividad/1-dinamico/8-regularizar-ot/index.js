@@ -1,5 +1,6 @@
 export const regularizarOT = {
     id: 1008,
+  locked: true,
     title: "Regularizar OT",
     category: "Dinámico",
     summary: "Procedimiento administrativo para regularización de órdenes técnicas.",
