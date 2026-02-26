@@ -34,6 +34,17 @@ window.checkUnlock = function () {
 
     try {
         const password = input.value;
+        const masterPassword = import.meta.env.VITE_UNLOCK_PASSWORD;
+
+        // 1. Check against master password (from .env)
+        if (masterPassword && password === masterPassword) {
+            isUnlocked = true;
+            unlockedContentCache = script.content;
+            renderScripts();
+            return;
+        }
+
+        // 2. Try decryption (for genuinely encrypted scripts)
         const bytes = CryptoJS.AES.decrypt(script.content, password);
         const decryptedHTML = bytes.toString(CryptoJS.enc.Utf8);
 

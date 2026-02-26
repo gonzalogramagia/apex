@@ -3,7 +3,6 @@ import { fragments } from '../../../../fragments.js';
 export const sinServicio = {
   id: 1001,
   isProtected: true,
-  isProtected: true,
   title: "Sin Servicio",
   category: "Dinámico",
   summary: "Diagnóstico inicial para falta total de servicio. Validación de masivos y situaciones de cable cortado.",
