@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: apex-private
+    env: static
+    buildCommand: npm run build
+    publishPath: dist
+    routes:
+      - source: /.*
+        destination: /index.html
