@@ -993,7 +993,8 @@ function renderScripts() {
 
 
 
-    scriptCount.textContent = filteredScripts.filter(s => !s.locked).length;
+    const scriptCountEl = document.getElementById('script-count');
+    if (scriptCountEl) scriptCountEl.textContent = filteredScripts.filter(s => !s.locked).length;
 
     if (filteredScripts.length === 0) {
         scriptsGrid.innerHTML = `
