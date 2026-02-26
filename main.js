@@ -907,17 +907,21 @@ function renderScripts() {
         // If searching locally, we only care about the current open script
         if (isLocalSearch && currentScriptId && script.id !== currentScriptId) return false;
 
-        if (script.isHidden || script.locked) return false; // Prevent technical sub-flows or locked scripts from showing up in search
+        if (script.isHidden || script.locked) return false;
 
         const matchesCategory = currentFilter === 'all' || script.category === currentFilter || isLocalSearch;
 
-        // Extended search including content
+        // Extended search including content — guard all field accesses against undefined
         const searchTerm = searchQuery.toLowerCase();
-        const matchesSearch = script.title.toLowerCase().includes(searchTerm) ||
-            script.summary.toLowerCase().includes(searchTerm) ||
-            (script.content && stripHtml(script.content).toLowerCase().includes(searchTerm)) ||
+        const title = (script.title || '').toLowerCase();
+        const summary = (script.summary || '').toLowerCase();
+        const content = script.content ? stripHtml(script.content).toLowerCase() : '';
+        const tags = Array.isArray(script.tags) ? script.tags : [];
+        const matchesSearch = title.includes(searchTerm) ||
+            summary.includes(searchTerm) ||
+            content.includes(searchTerm) ||
             (script.originalScriptId != null && script.originalScriptId.toString().includes(searchTerm)) ||
-            script.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+            tags.some(tag => (tag || '').toLowerCase().includes(searchTerm));
 
         return matchesCategory && matchesSearch;
     });
