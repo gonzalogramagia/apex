@@ -367,7 +367,7 @@ h3,
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-speed);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* All category buttons → same compact size */
