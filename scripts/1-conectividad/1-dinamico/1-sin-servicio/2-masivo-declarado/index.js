@@ -1,56 +1,32 @@
-import { fragments } from '../../../../../fragments.js';
+import { fragments } from "../../../../../fragments.js";
 
 export const masivoDeclarado = {
-    id: 1010,
+  id: 1010,
   isProtected: true,
   isHidden: true,
-    title: "Masivo Declarado",
-    category: "Dinámico",
-    summary: "Procedimiento para carga de ticket en ECO ante un incidente masivo declarado, considerando las opciones con y sin seguimiento E2E.",
-    tags: ["Dinámico", "Sin Servicio", "Masivo Declarado", "ECO"],
-    lastSync: "21 de Febrero de 2026",
-    originalScriptId: "944",
-    parentScriptId: 1001,
-    complementaryContent: [],
-    content: `
+  title: "Masivo Declarado",
+  category: "Dinámico",
+  summary:
+    "Procedimiento para carga de ticket en ECO ante un incidente masivo declarado, considerando las opciones con y sin seguimiento E2E.",
+  tags: ["Dinámico", "Sin Servicio", "Masivo Declarado", "ECO"],
+  lastSync: "21 de Febrero de 2026",
+  originalScriptId: "944",
+  parentScriptId: 1001,
+  complementaryContent: [],
+  content: `
     <div class="detail-body">
-      <p style="font-weight:600; margin-bottom:1.5rem;">Si el servicio posee un Masivo ya declarado, al pasar el caso al estado “En Cola” en ECO inmediatamente se asociará el caso al masivo, holdeándolo.</p>
-
-
-
-      <p>El caso quedará en estado <strong>On hold (holdeado)</strong> en el grupo de GI hasta que se resuelva el incidente masivo. Cuando esto ocurra pasará automáticamente al estado Resuelto y continuará con los procedimientos de cierres actuales.</p>
-
-      <div class="service-section" style="margin-top:1.5rem;">
-          <h3 style="color:var(--accent-secondary); margin-bottom:1rem;">📝 Generar reclamo en ECO</h3>
-          <ul class="eco-list" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-              <li><strong>Grupo de servicio:</strong> Conectividad</li>
-              <li><strong>Servicio:</strong> CM Dinámico - Internet</li>
-              <li><strong>Clasificación:</strong> RECLAMOS CORPORATIVOS \\ CONECTIVIDAD \\ TOTAL \\ FALLA MASIVA</li>
-              <li><strong>Resumen:</strong> FALLA MASIVA</li>
-              <li><strong>Grupo propietario a escalar:</strong> GI Gestión Inicial B2B</li>
-              <li><strong>Estado:</strong> “Cerrado”</li>
-          </ul>
-      </div>
-
-      <div class="alert-box info" style="margin-top:1.5rem;">
-          <h4>ℹ️ Seguimiento E2E</h4>
-          <p>De ser necesario realizar seguimiento E2E de algunos de estos tickets debes dejarlo en la cola de trabajo <strong>GI Procesos</strong> de manera que ingrese a la bolsa de seguimiento.</p>
-      </div>
-
-
-
-      <div class="service-section" style="margin-top:1.5rem;">
-          <h3 style="color:var(--accent-secondary); margin-bottom:1rem;">📝 Generar reclamo en ECO (Con seguimiento)</h3>
-          <ul class="eco-list" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem; background: var(--bg-primary); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-              <li><strong>Grupo de servicio:</strong> Conectividad</li>
-              <li><strong>Servicio:</strong> CM Dinámico - Internet</li>
-              <li><strong>Clasificación:</strong> RECLAMOS CORPORATIVOS \\ CONECTIVIDAD \\ TOTAL \\ FALLA MASIVA</li>
-              <li><strong>Resumen:</strong> FALLA MASIVA</li>
-              <li><strong>Grupo propietario a escalar:</strong> GI Procesos</li>
-              <li><strong>Estado:</strong> “En Cola”</li>
-          </ul>
-      </div>
-
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer non sem at augue vulputate facilisis, in volutpat purus feugiat. Phasellus convallis arcu id augue fermentum, at vulputate erat tincidunt.</p>
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+      <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+      <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+      <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.</p>
+      <p>Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.</p>
+      <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+      <p>Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.</p>
+      <p>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.</p>
+      <p>Omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.</p>
+      <p>Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.</p>
+      <p>Vivamus sodales, metus eget ullamcorper dictum, lectus nunc varius justo, sit amet ultricies massa lorem in nunc. Curabitur blandit, lectus sed vulputate interdum, erat nibh gravida arcu, a posuere lectus nibh sit amet est.</p>
     </div>
-  `
+  `,
 };

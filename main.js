@@ -763,6 +763,9 @@ function renderScripts() {
                                     <h3 style="margin: 0;">Contenido Protegido</h3>
                                     <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Ingresa la contraseña para visualizar este contenido.</p>
                                 </div>
+                                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); color: var(--text-primary); border-radius: 10px; padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.85rem; text-align: center;">
+                                    ℹ️ Este acceso es de ejemplo. Contraseña: <strong>scripting</strong>
+                                </div>
                                 <input type="password" id="unlock-input" class="unlock-input" placeholder="Contraseña..." onkeyup="if(event.key === 'Enter') checkUnlock()">
                                 <button class="unlock-btn" onclick="checkUnlock()">
                                     Desbloquear 🔓
@@ -1121,6 +1124,17 @@ function renderScriptCard(script) {
     `;
 }
 
+function scrollToTopOnScriptNavigation() {
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.scrollTop = 0;
+    }
+
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+}
+
 // Open Script Detail
 window.openScript = function (id) {
     const script = scripts.find(s => s.id === id);
@@ -1168,6 +1182,7 @@ window.openScript = function (id) {
         saveToHistory(script);
 
         renderScripts();
+        scrollToTopOnScriptNavigation();
     }
 }
 const openScript = window.openScript;
